@@ -1,0 +1,23 @@
+@import '../colors'
+
+.time-control-wrapper
+    display: flex
+    flex-direction: row
+
+    .time-text, .time-text-editor
+        font-family: 'digital'
+        font-size: 18px
+        min-width: 40px
+        max-width: 100px
+
+    .time-text
+        margin: 0 6px
+
+    .time-text-editor
+        &:focus
+            outline: none
+            border: none
+            border-bottom: 1px solid $orange
+    
+    .time-control-btn.little
+        transform: scale(0.75)

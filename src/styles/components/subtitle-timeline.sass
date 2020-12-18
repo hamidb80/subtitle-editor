@@ -1,0 +1,101 @@
+@import '../colors'
+
+.advanced-timeline
+    display: flex
+    flex-direction: row
+    justify-content: space-around
+    height: 96px
+    width: 80%
+    min-width: 600px
+    border-radius: 5px
+
+    .zoom-btn-group
+        display: flex
+        flex-direction: column
+        justify-content: space-between
+        padding-right: 10px
+
+    .advanced-timeline-wrapper
+        position: relative
+        overflow: hidden
+        display: grid
+        height: 100%
+        border: 1px solid $gray-400
+        border-radius: 5px
+
+        .current-time-cursor, .mover
+            grid-row: 1
+            grid-column: 1
+
+        .current-time-cursor
+            width: 2px
+            height: 100%
+            background-color: #68c896
+            pointer-events: none
+            z-index: 3
+
+        .mover
+            transition: 0.2s
+            will-change: transform
+            transition-timing-function: linear
+
+        .steps-side, .captions-side, .time-ruler-wrapper
+            width: 100%
+            overflow: hidden
+            height: 32px
+
+        .time-ruler-wrapper
+            display: grid
+            border-bottom: 1px solid $gray-800
+
+            .user-time-cursor-wrapper, .time-ruler
+                grid-row: 1
+                grid-column: 1
+
+            .user-time-cursor-wrapper
+                cursor: pointer
+
+                .user-time-cursor
+                    position: relative
+                    width: 0px
+                    height: 100%
+                    will-change: transform
+                    border-left: 2px dashed $red
+
+        .step-item, .caption-item, .cut-item
+            display: inline-block
+            position: absolute
+            height: 32px
+            padding: 2px 6px
+            color: $white
+            text-shadow: 1px 1px $black
+            border-radius: 4px
+            opacity: 0.8
+            overflow: hidden
+            cursor: pointer
+            transition-property: opacity, background-color, color
+            transition-duration : 0.2s
+            user-select: none
+
+            &:hover, &.selected
+                opacity: 1
+
+        .steps-side
+            background-color: $gray-200
+
+            .step-item
+                background-color: $gray-800
+                border-left: 8px solid $pink
+
+                &:hover, &.selected
+                    background-color: $pink
+
+        .captions-side
+            background-color: $gray-100
+
+            .caption-item
+                background-color: $black
+                border-left: 8px solid $orange
+
+                &:hover, &.selected
+                    background-color: $orange

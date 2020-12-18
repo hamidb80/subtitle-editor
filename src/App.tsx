@@ -1,26 +1,22 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from 'react'
+import {BrowserRouter as Router, Route } from 'react-router-dom'
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import Intro from "./pages/Intro"
+import Studio from "./pages/Studio"
+
+import "./styles/app.sass"
+import "./styles/font-awesome/all.css"
+import "./styles/font-awesome/fontawesome.css"
+
+class App extends React.Component {
+  render() {
+    return (
+      <Router>
+        <Route exact path='/' component={Intro}></Route>
+        <Route exact path='/studio' component={Studio}></Route>
+      </Router>
+    )
+  }
 }
 
-export default App;
+export default App
