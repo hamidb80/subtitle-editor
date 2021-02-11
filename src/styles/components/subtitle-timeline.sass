@@ -5,11 +5,11 @@
     flex-direction: row
     justify-content: space-around
     height: 96px
-    width: 80%
+    width: 100%
     min-width: 600px
     border-radius: 5px
 
-    .zoom-btn-group
+    .side-bar
         display: flex
         flex-direction: column
         justify-content: space-between
@@ -62,7 +62,7 @@
                     will-change: transform
                     border-left: 2px dashed $red
 
-        .step-item, .caption-item, .cut-item
+        .caption-item
             display: inline-block
             position: absolute
             height: 32px
@@ -77,18 +77,11 @@
             transition-duration : 0.2s
             user-select: none
 
+            &:nth-of-type(odd)
+                margin-top: 32px
+
             &:hover, &.selected
                 opacity: 1
-
-        .steps-side
-            background-color: $gray-200
-
-            .step-item
-                background-color: $gray-800
-                border-left: 8px solid $pink
-
-                &:hover, &.selected
-                    background-color: $pink
 
         .captions-side
             background-color: $gray-100

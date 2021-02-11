@@ -2,12 +2,15 @@ import React, { MouseEvent } from 'react'
 import { second2timestamp } from "../../utils/timestamp"
 
 import '../../styles/components/simple-timeline.sass'
+import { isThisTypeNode } from 'typescript'
 
 type Props = {
-    // per seconds
-    totalTime: number
+    className?: string
+    
+    totalTime: number // per seconds
     currentTime: number
     onSelectNewTime?: (newTime: number) => void
+    
     fullScreen?: boolean
 }
 
@@ -44,7 +47,7 @@ class SimpleTimeline extends React.Component<Props> {
         const duration = second2timestamp(this.props.totalTime, "minute")
 
         return (
-            <div className={"timeline " + (this.props.fullScreen ? 'fullscreen' : '')}
+            <div className={"timeline "+ this.props.className  + (this.props.fullScreen ? ' fullscreen' : '')}
                 onClick={this.handleClick}>
                 <div className="progress">
                     <div className="progress-bar" style={{ width: `${widthPercent}%` }}></div>

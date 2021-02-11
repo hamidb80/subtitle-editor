@@ -5,6 +5,7 @@ import "../../styles/components/video-player.sass"
 type Props = {
     videoUrl: string
     onTimeUpdate?: (timePerSecond: number) => void
+    onDurationChanges: (duration: number) => void
 }
 
 const videoControllHiddingDelay = 2
@@ -12,6 +13,7 @@ const videoControllHiddingDelay = 2
 class VideoPlayer extends React.Component<Props> {
     videoElementRef: React.RefObject<HTMLVideoElement>
     timer: number = 0
+
     state: {
         lastStart: number
         showVideoControll: boolean
@@ -36,16 +38,26 @@ class VideoPlayer extends React.Component<Props> {
         this.setPlay = this.setPlay.bind(this)
         this.isPlaying = this.isPlaying.bind(this)
         this.disableVideoControllers = this.disableVideoControllers.bind(this)
+
+        this.onDurationChanges = this.onDurationChanges.bind(this)
     }
 
     // ----------------------- events ------------------------
 
-    onTimeUpdate(e: SyntheticEvent<HTMLVideoElement, Event>) {
-        const currentTime = e.currentTarget.currentTime
-
-        if (this.props.onTimeUpdate)
-            this.props.onTimeUpdate(currentTime)
+    onDurationChanges() {
+        if (this.props.onDurationChanges) {
+            const du = this.videoElementRef.current?.duration || 0
+            this.props.onDurationChanges(du)
+        }
     }
+
+    onTimeUpdate(e: SyntheticEvent<HTMLVideoElement, Event>) {
+        if (this.props.onTimeUpdate) {
+            const currentTime = e.currentTarget.currentTime
+            this.props.onTimeUpdate(currentTime)
+        }
+    }
+
 
     onContextmenu(e: MouseEvent<any>) {
         e.preventDefault()
@@ -71,6 +83,7 @@ class VideoPlayer extends React.Component<Props> {
 
     shootTime(seconds: number) {
         const ve = this.videoElementRef.current
+
         if (ve) {
             const currentTime = ve.currentTime
             this.setTime(currentTime + seconds)
@@ -83,15 +96,13 @@ class VideoPlayer extends React.Component<Props> {
         if (this.videoElementRef.current) {
             if (play)
                 this.videoElementRef.current?.play()
-
             else
                 this.videoElementRef.current?.pause()
         }
     }
 
     isPlaying(): boolean {
-        return Boolean(
-            this.videoElementRef.current && !this.videoElementRef.current.paused)
+        return Boolean(this.videoElementRef.current && !this.videoElementRef.current.paused)
     }
 
     // ------------------- component API ----------------
@@ -99,18 +110,21 @@ class VideoPlayer extends React.Component<Props> {
 
     render() {
         const isPlaying = this.isPlaying()
+
         return (
             <div className={"video-player " + (this.state.showVideoControll ? 'show ' : '')}
                 onMouseMove={this.onMouseMove} onMouseOut={this.disableVideoControllers}>
+
                 <div className="video-screen"
-                    onContextMenu={this.onContextmenu}
-                >
+                    onContextMenu={this.onContextmenu}>
+
                     <video
                         onTimeUpdate={this.onTimeUpdate}
                         ref={this.videoElementRef}
                         src={this.props.videoUrl}
                         autoPlay={false}
                         loop={false}
+                        onDurationChange={this.onDurationChanges}
                     ></video>
 
                     <div className={"video-state-controller"}>

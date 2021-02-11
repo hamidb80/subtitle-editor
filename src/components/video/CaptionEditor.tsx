@@ -22,7 +22,7 @@ type State = {
     content2change: string
 }
 
-class CaptionStepEditor extends React.Component<Props, State> {
+class CaptionEditor extends React.Component<Props, State> {
     constructor(props: any) {
         super(props)
 
@@ -55,7 +55,6 @@ class CaptionStepEditor extends React.Component<Props, State> {
         if (this.props.selectedCaption_i !== null) {
             const cap = this.props.captions[this.props.selectedCaption_i]
 
-
             if (startChange === null)
                 cap.start = this.props.currentTime
             else
@@ -67,13 +66,14 @@ class CaptionStepEditor extends React.Component<Props, State> {
                 cap.end += endChange
 
 
-
             // sync end & start
             if (cap.start > cap.end)
+            {
                 if (endChange === 0)
                     cap.end = cap.start
                 else
                     cap.start = cap.end
+            }
 
             this.props.onCaptionChanged(this.props.selectedCaption_i, cap)
         }
@@ -162,4 +162,4 @@ class CaptionStepEditor extends React.Component<Props, State> {
     }
 }
 
-export default CaptionStepEditor
+export default CaptionEditor

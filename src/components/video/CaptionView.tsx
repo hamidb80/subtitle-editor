@@ -5,8 +5,7 @@ import '../../styles/components/caption-view.sass'
 type Props = {
     currentTime: number
     captions: Caption[]
-    onChange?: (index: number, newCaption: Caption) => void
-    fullScreen?:boolean
+    fullScreen?: boolean
 }
 
 class CaptionView extends React.Component<Props> {
@@ -15,7 +14,6 @@ class CaptionView extends React.Component<Props> {
 
         this.getCaptionContent = this.getCaptionContent.bind(this)
     }
-
 
     getCaptionContent(): string {
         const t = this.props.currentTime
