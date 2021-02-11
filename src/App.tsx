@@ -1,12 +1,9 @@
 import React from 'react'
-import {BrowserRouter as Router, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Route } from 'react-router-dom'
 
-import Intro from "./pages/Intro"
-import Studio from "./pages/Studio"
+import { Intro, Studio } from "./pages"
 
 import "./styles/app.sass"
-// import "./styles/font-awesome/all.css"
-// import "./styles/font-awesome/fontawesome.css"
 
 class App extends React.Component {
   render() {

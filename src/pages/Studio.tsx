@@ -1,11 +1,10 @@
 import React from 'react'
 
 import appStates from "../utils/states"
-import { timestamp2seconds } from "../utils/timestamp"
 import { Caption, captionsToFileString } from "../utils/types"
-import {
-  VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView
-} from "../components/video"
+import { timestamp2seconds } from "../utils/timestamp"
+
+import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn } from "../components/form"
 
 import "../styles/pages/studio.sass"
@@ -40,48 +39,45 @@ class Intro extends React.Component {
 
     this.VideoPlayerRef = React.createRef()
 
+    // --- bind methods ---
     this.addCaption = this.addCaption.bind(this)
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
 
-    this.createCaptions = this.createCaptions.bind(this)
+    this.loadCaptions = this.loadCaptions.bind(this)
     this.saveFile = this.saveFile.bind(this)
   }
 
-  async createCaptions() {
-    const response = await fetch(appStates.subtitleUrl.getData())
-    const data = await response.text()
+  async loadCaptions() {
+    const response = await fetch(appStates.subtitleUrl.getData()),
+      data = await response.text(),
+      matches = Array.from(data.matchAll(/([\d,:]{12}) --> ([\d,:]{12})\n(.*)(?![\d,:]{12})/g)),
 
-    const matches = Array.from(data.matchAll(/([\d,:]{12}) --> ([\d,:]{12})\n(.*)(?![\d,:]{12})/g))
-
-    let caps: Caption[] = matches.map(m => ({
-      start: timestamp2seconds(m[1]),
-      end: timestamp2seconds(m[2]),
-      content: m[3]
-    }))
+      caps: Caption[] = matches.map(m => ({
+        start: timestamp2seconds(m[1]),
+        end: timestamp2seconds(m[2]),
+        content: m[3]
+      }))
 
     this.setState({ captions: caps })
   }
 
   componentDidMount() {
-    setTimeout(this.createCaptions, 1000)
+    setTimeout(this.loadCaptions, 1000)
   }
 
   addCaption() {
-    const newCaps = this.state.captions,
-      currentTime = this.state.currentTime
+    const newCaps = this.state.captions
 
     newCaps.push({
-      start: currentTime,
-      end: currentTime + 1,
-      content: '<caption>'
+      start: this.state.currentTime,
+      end: this.state.currentTime + 1,
+      content: "New Caption"
     })
-
-    const selected_caption_i = newCaps.length - 1
 
     this.setState({
       captions: newCaps,
-      selected_caption_i,
+      selected_caption_i: newCaps.length - 1,
     })
   }
   onChangeCaption(ind: number, c: Caption) {
@@ -89,7 +85,6 @@ class Intro extends React.Component {
     caps[ind] = c
 
     this.setState({ captions: caps })
-
   }
   onCaptionDeleted(ind: number) {
     const caps = this.state.captions
@@ -98,10 +93,7 @@ class Intro extends React.Component {
     this.setState({ captions: caps, selected_caption_i: null })
   }
 
-  // TODO:
-  undo() {
-
-  }
+  undo() { } // TODO
 
   saveFile() {
     fileDownload(captionsToFileString(this.state.captions), 'subtitle.srt');
@@ -125,7 +117,6 @@ class Intro extends React.Component {
           currentTime={this.state.currentTime}
           captions={this.state.captions}
         />
-
         <Timeline
           className="my-2"
           currentTime={this.state.currentTime}
@@ -134,21 +125,17 @@ class Intro extends React.Component {
         />
 
         <div className="d-flex justify-content-center action-button-group my-2">
-
           <CircleBtn
             iconClassName="fas fa-plus"
             text="add caption"
             onClick={this.addCaption}
           />
-
           <CircleBtn
             iconClassName="fas fa-undo"
             text="undo"
             onClick={this.undo}
           />
-
         </div>
-
 
         <SubtitleTimeline
           className="my-1"
@@ -165,7 +152,7 @@ class Intro extends React.Component {
 
         <CaptionEditor
           currentTime={this.state.currentTime}
-          replayTimeRange={() => { }} // TODO:
+          replayTimeRange={() => { }} // TODO
 
           captions={this.state.captions}
           selectedCaption_i={this.state.selected_caption_i}
@@ -180,8 +167,7 @@ class Intro extends React.Component {
           <strong>save as a file <span className="fas fa-file"></span>  </strong>
         </button>
       </div>
-    </>
-    )
+    </>)
   }
 }
 

@@ -1,4 +1,3 @@
-
 function digitalClock(num: number, numberOfZeroes: number = 2): string {
     let i = 1
     while (i <= numberOfZeroes) {
@@ -11,17 +10,15 @@ function digitalClock(num: number, numberOfZeroes: number = 2): string {
     return '0'.repeat(numberOfZeroes - i) + String(num)
 }
 
+// TODO: minutes are diffrent in diffrent modes
 function second2timestamp(total_seconds: number, mode: 'minute' | 'minute+ms' | 'complete'): string {
     const miliseconds = Math.floor((total_seconds % 1) * 1000),
         seconds = Math.floor(total_seconds % 60),
         minutes = Math.floor((total_seconds % 3600) / 60),
         hours = Math.floor(total_seconds / 3600)
 
-    // TODO: minutes are diffrent in diffrent modes
-
     if (mode === 'minute')
         return `${digitalClock(minutes)}:${digitalClock(seconds)}`
-
     else if (mode === "minute+ms")
         return `${digitalClock(minutes)}:${digitalClock(seconds)}.${digitalClock(miliseconds, 3)}`
     else if (mode === 'complete')
@@ -30,8 +27,8 @@ function second2timestamp(total_seconds: number, mode: 'minute' | 'minute+ms' | 
         return ''
 }
 
+// for example: timestamp = 00:00:00:654
 function timestamp2seconds(timestamp: string): number {
-    // for example: timestamp = 00:00:00:654
     const hours = Number(timestamp.slice(0, 2)),
         minutes = Number(timestamp.slice(3, 5)),
         seconds = Number(timestamp.slice(6, 8)),
@@ -41,6 +38,4 @@ function timestamp2seconds(timestamp: string): number {
 }
 
 
-export {
-    timestamp2seconds, second2timestamp, digitalClock,
-}
+export { timestamp2seconds, second2timestamp, digitalClock, }

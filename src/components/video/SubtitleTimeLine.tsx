@@ -1,12 +1,12 @@
 import React, { MouseEvent, useState, ReactElement } from 'react'
-import { CircleBtn } from "../form";
+import { CircleBtn } from "../form"
 import { Caption } from "../../utils/types"
 import { second2timestamp } from "../../utils/timestamp"
 
 import "../../styles/components/subtitle-timeline.sass"
 
-// per seconds
-const timelineCursorOffset = 4
+
+const timelineCursorOffset = 4 // per seconds
 
 type Props = {
   className?: string
@@ -35,15 +35,13 @@ class SubtitleTimeline extends React.Component<Props, State> {
       lastScale: 0,
       scale: 30,
     }
-
     this.canvasRef = React.createRef()
 
+    // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
     this.zoom = this.zoom.bind(this)
     this.drawTimeRuler = this.drawTimeRuler.bind(this)
-
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
-
     this.onKeyDown = this.onKeyDown.bind(this)
   }
 
@@ -74,7 +72,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
     }
   }
 
-  // TODO:
+  // TODO
   onKeyDown(key: string) {
     if (key === "Escape") {
       console.log('esc')
@@ -84,7 +82,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
       console.log('esc')
     }
 
-    console.log(key);
+    console.log(key)
   }
 
   drawTimeRuler() {
@@ -116,13 +114,12 @@ class SubtitleTimeline extends React.Component<Props, State> {
     const scale = this.state.scale
 
     let caps: JSX.Element[] = []
-
     if (this.props.captions)
       caps = captionItems(this.props.captions, this.props.selectedCaption_i, this.captionSelectionHandler, scale)
 
-
-    const duration = this.props.duration
-    const percent = -(this.props.currentTime - timelineCursorOffset) / duration * 100
+    const
+      duration = this.props.duration,
+      percent = -(this.props.currentTime - timelineCursorOffset) / duration * 100
 
 
     return (
@@ -134,16 +131,15 @@ class SubtitleTimeline extends React.Component<Props, State> {
             onClick={() => this.zoom(+10)}
             iconClassName="fas fa-search-plus"
           />
-
           <CircleBtn
             className="mb-1"
             onClick={() => this.zoom(-10)}
             iconClassName="fas fa-search-minus"
           />
-
           <div className="center">
-            <span> {scale} </span>
+            {scale}
           </div>
+
         </div>
 
         <div className="advanced-timeline-wrapper">
@@ -157,11 +153,9 @@ class SubtitleTimeline extends React.Component<Props, State> {
 
             <div className="time-ruler-wrapper">
               <canvas className="time-ruler" ref={this.canvasRef}
-                width={duration * scale} height="32">
-              </canvas>
+                width={duration * scale} height="32"></canvas>
 
               <UserCursorElem onTimePick={this.setTimeFromPixels} />
-
             </div>
 
             <div className="captions-side">
@@ -175,9 +169,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 }
 
-
 // captions
-
 function captionItems(caps: Caption[], selected_i: null | number, clickFunc: (index: number) => void, scale: number): JSX.Element[] {
   let i = 0
   return caps.map((c: Caption) => captionItem(c, i++, selected_i, clickFunc, scale))
@@ -207,15 +199,15 @@ type USPROPS = {
 const UserCursorElem: React.FC<USPROPS> = (props: USPROPS): ReactElement => {
   let [cursorXPos, setCursor] = useState(0)
 
-  const calculateRealOffset = (e: MouseEvent) => {
-    const mouseX = e.pageX, // based on the screen
-      PostionOfElem = e.currentTarget.getBoundingClientRect()
+  const
+    calculateRealOffset = (e: MouseEvent) => {
+      const mouseX = e.pageX, // based on the screen
+        PostionOfElem = e.currentTarget.getBoundingClientRect()
 
-    return mouseX - PostionOfElem.left
-  }
-
-  const mouseMove = (e: MouseEvent) => setCursor(calculateRealOffset(e))
-  const onClick = (e: MouseEvent) => props.onTimePick(calculateRealOffset(e))
+      return mouseX - PostionOfElem.left
+    },
+    mouseMove = (e: MouseEvent) => setCursor(calculateRealOffset(e)),
+    onClick = (e: MouseEvent) => props.onTimePick(calculateRealOffset(e))
 
 
   return (

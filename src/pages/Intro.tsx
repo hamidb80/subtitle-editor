@@ -1,13 +1,12 @@
 import React from 'react'
 import { Link } from "react-router-dom";
+
 import FileInput from "../components/form/FileInput"
 import appStates from "../utils/states"
 
 class Intro extends React.Component {
-
   constructor(props: any) {
     super(props)
-
     this.state = {}
 
     this.handler = this.handler.bind(this)
@@ -51,8 +50,7 @@ class Intro extends React.Component {
           </Link>
         </div>
 
-      </div></>
-    )
+      </div></>)
   }
 }
 

@@ -1,11 +1,10 @@
 import React, { MouseEvent } from 'react'
-// import '../../styles/components/caption-view.sass'
 
 type Props = {
   text?: string
-  onClick: (me: MouseEvent) => void
   className?: string
   iconClassName: string
+  onClick: (me: MouseEvent) => void
 }
 
 class CircleBtn extends React.Component<Props> {
@@ -24,8 +23,7 @@ class CircleBtn extends React.Component<Props> {
           <div className="badge">
             <span> {this.props.text} </span>
           </div>
-        ) : ''
-        }
+        ) : ''}
       </div>
     </>)
   }
