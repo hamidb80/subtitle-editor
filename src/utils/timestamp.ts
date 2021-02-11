@@ -25,7 +25,7 @@ function second2timestamp(total_seconds: number, mode: 'minute' | 'minute+ms' | 
     else if (mode === "minute+ms")
         return `${digitalClock(minutes)}:${digitalClock(seconds)}.${digitalClock(miliseconds, 3)}`
     else if (mode === 'complete')
-        return `${digitalClock(hours)}:${digitalClock(minutes)}:${digitalClock(seconds)}.${digitalClock(miliseconds, 3)}`
+        return `${digitalClock(hours)}:${digitalClock(minutes)}:${digitalClock(seconds)},${digitalClock(miliseconds, 3)}`
     else
         return ''
 }

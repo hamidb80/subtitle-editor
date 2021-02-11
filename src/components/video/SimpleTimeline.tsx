@@ -2,7 +2,6 @@ import React, { MouseEvent } from 'react'
 import { second2timestamp } from "../../utils/timestamp"
 
 import '../../styles/components/simple-timeline.sass'
-import { isThisTypeNode } from 'typescript'
 
 type Props = {
     className?: string
@@ -40,7 +39,6 @@ class SimpleTimeline extends React.Component<Props> {
     render() {
         if (this.props.totalTime === undefined)
             return ''
-
 
         const widthPercent = this.props.currentTime / this.props.totalTime * 100
         const time = second2timestamp(this.props.currentTime, "minute")

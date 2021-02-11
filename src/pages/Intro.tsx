@@ -1,5 +1,5 @@
 import React from 'react'
-import {Link  } from "react-router-dom";
+import { Link } from "react-router-dom";
 import FileInput from "../components/form/FileInput"
 import appStates from "../utils/states"
 
@@ -17,9 +17,9 @@ class Intro extends React.Component {
     const blob = URL.createObjectURL(f)
 
     if (fileType === 'video')
-      appStates.videoFile.setData(blob)
+      appStates.videoUrl.setData(blob)
     else
-      appStates.subtitleFile.setData(blob)
+      appStates.subtitleUrl.setData(blob)
 
     console.log(blob)
   }

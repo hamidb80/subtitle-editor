@@ -26,7 +26,6 @@ class FileInput extends React.Component<Props> {
 
     changeHandler(e: ChangeEvent<HTMLInputElement>) {
         const inputFileElem = e.target
-        let file_name = ''
 
         // send selected file to it
         if (this.props.onChange && inputFileElem.files?.length){

@@ -53,6 +53,9 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   zoom(value: number) {
+    if (this.state.scale + value <= 0)
+      return
+
     this.setState(prevState => ({
       scale: prevState.scale + value
     }))

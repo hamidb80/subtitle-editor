@@ -5,8 +5,8 @@ import Intro from "./pages/Intro"
 import Studio from "./pages/Studio"
 
 import "./styles/app.sass"
-import "./styles/font-awesome/all.css"
-import "./styles/font-awesome/fontawesome.css"
+// import "./styles/font-awesome/all.css"
+// import "./styles/font-awesome/fontawesome.css"
 
 class App extends React.Component {
   render() {

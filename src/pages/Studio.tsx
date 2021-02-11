@@ -1,7 +1,8 @@
 import React from 'react'
 
 import appStates from "../utils/states"
-import { Caption } from "../utils/types"
+import { timestamp2seconds } from "../utils/timestamp"
+import { Caption, captionsToFileString } from "../utils/types"
 import {
   VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView
 } from "../components/video"
@@ -9,6 +10,7 @@ import { CircleBtn } from "../components/form"
 
 import "../styles/pages/studio.sass"
 
+const fileDownload = require('js-file-download');
 
 class Intro extends React.Component {
   state: {
@@ -27,7 +29,7 @@ class Intro extends React.Component {
     super(props)
 
     this.state = {
-      videoUrl: appStates.videoFile.getData(),
+      videoUrl: appStates.videoUrl.getData(),
 
       currentTime: 0,
       totalTime: 0,
@@ -41,8 +43,29 @@ class Intro extends React.Component {
     this.addCaption = this.addCaption.bind(this)
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
+
+    this.createCaptions = this.createCaptions.bind(this)
+    this.saveFile = this.saveFile.bind(this)
   }
 
+  async createCaptions() {
+    const response = await fetch(appStates.subtitleUrl.getData())
+    const data = await response.text()
+
+    const matches = Array.from(data.matchAll(/([\d,:]{12}) --> ([\d,:]{12})\n(.*)(?![\d,:]{12})/g))
+
+    let caps: Caption[] = matches.map(m => ({
+      start: timestamp2seconds(m[1]),
+      end: timestamp2seconds(m[2]),
+      content: m[3]
+    }))
+
+    this.setState({ captions: caps })
+  }
+
+  componentDidMount() {
+    setTimeout(this.createCaptions, 1000)
+  }
 
   addCaption() {
     const newCaps = this.state.captions,
@@ -66,17 +89,22 @@ class Intro extends React.Component {
     caps[ind] = c
 
     this.setState({ captions: caps })
+
   }
   onCaptionDeleted(ind: number) {
     const caps = this.state.captions
     caps.splice(ind, 1)
 
-    this.setState({ captions: caps, selected_caption_i:null })
+    this.setState({ captions: caps, selected_caption_i: null })
   }
 
   // TODO:
   undo() {
 
+  }
+
+  saveFile() {
+    fileDownload(captionsToFileString(this.state.captions), 'subtitle.srt');
   }
 
   render() {
@@ -143,13 +171,12 @@ class Intro extends React.Component {
           selectedCaption_i={this.state.selected_caption_i}
           onCaptionChanged={this.onChangeCaption}
           onCaptionDeleted={this.onCaptionDeleted}
-
         />
 
       </div>
 
       <div className="d-flex justify-content-center my-2">
-        <button className="btn btn-danger" onClick={() => { }}>
+        <button className="btn btn-danger" onClick={this.saveFile}>
           <strong>save as a file <span className="fas fa-file"></span>  </strong>
         </button>
       </div>

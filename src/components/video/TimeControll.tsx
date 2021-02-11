@@ -72,28 +72,30 @@ class TimeControll extends React.Component<Props, State> {
                         onChange={this.changeTimeEditing} value={this.state.timeEditing}
                         autoFocus onBlur={this.textEditorTimeChange} />
                 </div>
-            ) :
-            (
-                <div className="time-text" onContextMenu={() => this.changeEditingState(true)}>
+            ) : (
+                <div className="time-text" onDoubleClick={() => this.changeEditingState(true)}>
                     <span> {time} </span>
                 </div>
             )
 
         return (
             <div className="time-control-wrapper">
-                <button className={"btn circle-btn time-control-btn minus-time " + (disabled ? 'disabled' : '')}
+                <button
+                    className={"btn circle-btn time-control-btn minus-time " + (disabled ? 'disabled' : '')}
                     onClick={() => this.changeHandler(-1)}>
                     <span className="fas fa-minus"></span>
                 </button>
 
-                <button className={"btn circle-btn time-control-btn minus-time little " + (disabled ? 'disabled' : '')}
+                <button
+                    className={"btn circle-btn time-control-btn minus-time little " + (disabled ? 'disabled' : '')}
                     onClick={() => this.changeHandler(-0.1)}>
                     <span className="fas fa-minus"></span>
                 </button>
 
                 {timeElem}
 
-                <button className={"btn circle-btn time-control-btn add-time little " + (disabled ? 'disabled' : '')}
+                <button
+                    className={"btn circle-btn time-control-btn add-time little " + (disabled ? 'disabled' : '')}
                     onClick={() => this.changeHandler(+0.1)}>
                     <span className="fas fa-plus"></span>
                 </button>

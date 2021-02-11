@@ -121,7 +121,7 @@ class CaptionEditor extends React.Component<Props, State> {
                         <button className="btn circle-btn mx-1" onClick={this.props.replayTimeRange}>
                             <span className="fas fa-play"></span>
                         </button>
-                        <input type="text" className="caption-editor" value={this.state.content2change}
+                        <input type="text" className="form-control d-inline-block caption-editor" value={this.state.content2change}
                             onChange={this.onCaptionContentChanged}
                             autoFocus onBlur={this.handleCaptionChange} />
 
