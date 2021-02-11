@@ -1,4 +1,4 @@
-import { second2timestamp } from "./timestamp";
+import { second2timestamp } from "./timestamp"
 
 export type Caption = {
     start: number
@@ -12,6 +12,7 @@ export function captionsCompare(a: Caption, b: Caption): number {
     else return 0
 }
 
+// save as .srt format
 export function captionsToFileString(caps: Caption[]): string {
     return caps.map((c, i) =>
         `${i + 1}\n${second2timestamp(c.start, "complete")} --> ${second2timestamp(c.end, "complete")}\n${c.content}`)

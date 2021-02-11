@@ -7,12 +7,10 @@ type Props = {
   time: number // per seconds
   onChange?: (changedValue: number | null) => void
 }
-
 type State = {
   isEditing: boolean
   timeEditing: string
 }
-
 
 class TimeControll extends React.Component<Props, State> {
   constructor(props: any) {

@@ -1,6 +1,5 @@
 class WindowStates<T> {
   data: T
-
   constructor(given_data: T) {
     this.data = given_data
   }

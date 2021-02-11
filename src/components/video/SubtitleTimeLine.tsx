@@ -5,7 +5,6 @@ import { second2timestamp } from "../../utils/timestamp"
 
 import "../../styles/components/subtitle-timeline.sass"
 
-
 const timelineCursorOffset = 4 // per seconds
 
 type Props = {
@@ -19,7 +18,6 @@ type Props = {
   selectedCaption_i: number | null
   onCaptionSelected: (captionIndex: number) => void
 }
-
 type State = {
   lastScale: number
   scale: number

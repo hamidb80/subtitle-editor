@@ -2,13 +2,14 @@ import React, { SyntheticEvent, MouseEvent } from 'react'
 
 import "../../styles/components/video-player.sass"
 
+const videoControllHiddingDelay = 2
+
+
 type Props = {
   videoUrl: string
   onTimeUpdate?: (timePerSecond: number) => void
   onDurationChanges: (duration: number) => void
 }
-
-const videoControllHiddingDelay = 2
 
 class VideoPlayer extends React.Component<Props> {
   videoElementRef: React.RefObject<HTMLVideoElement>
@@ -71,6 +72,8 @@ class VideoPlayer extends React.Component<Props> {
     this.timer = +setTimeout(this.disableVideoControllers, videoControllHiddingDelay * 1000)
   }
 
+  // // ----------------------- functions ------------------------
+
   disableVideoControllers() {
     clearTimeout(this.timer)
     this.setState({ showVideoControll: false })
@@ -90,8 +93,6 @@ class VideoPlayer extends React.Component<Props> {
     }
   }
 
-  // --------------------- functions ----------------------
-
   setPlay(play: boolean) {
     if (this.videoElementRef.current) {
       if (play)
@@ -105,9 +106,7 @@ class VideoPlayer extends React.Component<Props> {
     return Boolean(this.videoElementRef.current && !this.videoElementRef.current.paused)
   }
 
-  // ------------------- component API ----------------
-
-
+  // -------------------------- component API ---------------------------
   render() {
     const isPlaying = this.isPlaying()
 

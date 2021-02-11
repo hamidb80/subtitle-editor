@@ -1,5 +1,13 @@
 web based subtitle editor
 
+<!-- add screen shot -->
+
+- TODO
+[] add shortcuts
+[] add more details & comments about components
+[] add custom icon
+[] add test
+
 ### `yarn start`
 Runs the app in the development mode.
 

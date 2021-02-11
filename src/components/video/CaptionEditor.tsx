@@ -6,9 +6,9 @@ import { Caption } from "../../utils/types"
 import '../../styles/components/caption-editor.sass'
 
 type Props = {
-  captions: Caption[]
-
   currentTime: number
+  
+  captions: Caption[]
 
   selectedCaption_i: number | null
   onCaptionChanged: (index: number, c: Caption) => void
@@ -64,7 +64,6 @@ class CaptionEditor extends React.Component<Props, State> {
         cap.end = this.props.currentTime
       else
         cap.end += endChange
-
 
       // sync end & start
       if (cap.start > cap.end) {
