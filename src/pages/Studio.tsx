@@ -1,7 +1,7 @@
 import React from 'react'
 
 import appStates from "../utils/states"
-import { Caption, captionsToFileString } from "../utils/types"
+import { Caption, captionsToFileString } from "../utils/caption"
 import { timestamp2seconds } from "../utils/timestamp"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
@@ -9,9 +9,14 @@ import { CircleBtn } from "../components/form"
 
 import "../styles/pages/studio.sass"
 
-const fileDownload = require('js-file-download');
+const fileDownload = require('js-file-download')
 
-class Intro extends React.Component {
+const MAX_HISTORY = 5
+let capsHistory: string[] = []
+
+
+// TODO add page subscriable key-event and 
+class Studio extends React.Component {
   state: {
     videoUrl: string
 
@@ -40,9 +45,16 @@ class Intro extends React.Component {
     this.VideoPlayerRef = React.createRef()
 
     // --- bind methods ---
+    this.onTimeUpdate = this.onTimeUpdate.bind(this)
+
     this.addCaption = this.addCaption.bind(this)
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
+    this.onCaptionSelected = this.onCaptionSelected.bind(this)
+
+
+    this.captureLastStates = this.captureLastStates.bind(this)
+    this.undo = this.undo.bind(this)
 
     this.loadCaptions = this.loadCaptions.bind(this)
     this.saveFile = this.saveFile.bind(this)
@@ -56,7 +68,7 @@ class Intro extends React.Component {
       caps: Caption[] = matches.map(m => ({
         start: timestamp2seconds(m[1]),
         end: timestamp2seconds(m[2]),
-        content: m[3]
+        content: m[3].trim()
       }))
 
     this.setState({ captions: caps })
@@ -66,7 +78,31 @@ class Intro extends React.Component {
     setTimeout(this.loadCaptions, 1000)
   }
 
+  onTimeUpdate(nt: number) { // nt: new time
+    const sci = this.state.selected_caption_i
+    if (sci !== null) {
+      const cap = this.state.captions[sci],
+        ve = this.VideoPlayerRef,
+        isplying = ve.current?.isPlaying()
+
+      if (nt >= cap.end) {
+        if (isplying) {
+          ve.current?.setPlay(false)
+          ve.current?.setTime(cap.start)
+        }
+      }
+      else if (nt < cap.start) {
+        if (isplying)
+          ve.current?.setTime(cap.start)
+      }
+    }
+
+    this.setState({ currentTime: nt })
+  }
+
   addCaption() {
+    this.captureLastStates()
+
     const newCaps = this.state.captions
 
     newCaps.push({
@@ -81,19 +117,48 @@ class Intro extends React.Component {
     })
   }
   onChangeCaption(ind: number, c: Caption) {
+    this.captureLastStates()
+
     const caps = this.state.captions
     caps[ind] = c
 
     this.setState({ captions: caps })
   }
-  onCaptionDeleted(ind: number) {
-    const caps = this.state.captions
-    caps.splice(ind, 1)
+  onCaptionDeleted() {
+    if (this.state.selected_caption_i === null)
+      return
 
-    this.setState({ captions: caps, selected_caption_i: null })
+    this.captureLastStates()
+
+    const caps = this.state.captions
+    caps.splice(this.state.selected_caption_i, 1)
+
+    this.setState({
+      captions: caps,
+      selected_caption_i: null
+    })
+  }
+  onCaptionSelected(id: number) {
+    const newState = this.state.selected_caption_i === id ? null : id
+
+    this.setState({ selected_caption_i: newState })
   }
 
-  undo() { } // TODO
+  captureLastStates() {
+    const caps = JSON.stringify(this.state.captions)
+
+    if (capsHistory.length > MAX_HISTORY)
+      capsHistory = capsHistory.splice(0, 1)
+
+    capsHistory.push(caps)
+  }
+  undo() {
+    if (capsHistory.length > 0)
+      this.setState({
+        captions: JSON.parse(capsHistory.pop() as string),
+        selected_caption_i: null
+      })
+  }
 
   saveFile() {
     fileDownload(captionsToFileString(this.state.captions), 'subtitle.srt');
@@ -108,7 +173,7 @@ class Intro extends React.Component {
           <VideoPlayer
             ref={this.VideoPlayerRef}
             videoUrl={this.state.videoUrl}
-            onTimeUpdate={nt => this.setState({ currentTime: nt })}
+            onTimeUpdate={this.onTimeUpdate}
             onDurationChanges={du => this.setState({ totalTime: du })}
           />
         </div>
@@ -132,9 +197,24 @@ class Intro extends React.Component {
           />
           <CircleBtn
             iconClassName="fas fa-undo"
-            text="undo"
+            text={"undo " + capsHistory.length}
             onClick={this.undo}
           />
+
+          <CircleBtn
+            iconClassName="fas fa-times"
+            disabled={this.state.selected_caption_i === null}
+            text="unselect"
+            onClick={() => this.setState({ selected_caption_i: null })}
+          />
+
+          <CircleBtn
+            iconClassName="fas fa-trash"
+            disabled={this.state.selected_caption_i === null}
+            text="delete"
+            onClick={() => this.onCaptionDeleted()}
+          />
+
         </div>
 
         <SubtitleTimeline
@@ -144,31 +224,26 @@ class Intro extends React.Component {
           onSelectNewTime={nt => this.VideoPlayerRef.current?.setTime(nt)}
 
           captions={this.state.captions}
-          onCaptionSelected={id => { // toggle selection
-            this.setState({ selected_caption_i: (this.state.selected_caption_i === id ? null : id) })
-          }}
+          onCaptionSelected={this.onCaptionSelected}
           selectedCaption_i={this.state.selected_caption_i}
         />
 
         <CaptionEditor
           currentTime={this.state.currentTime}
-          replayTimeRange={() => { }} // TODO
-
           captions={this.state.captions}
           selectedCaption_i={this.state.selected_caption_i}
           onCaptionChanged={this.onChangeCaption}
-          onCaptionDeleted={this.onCaptionDeleted}
         />
 
       </div>
 
       <div className="d-flex justify-content-center my-2">
         <button className="btn btn-danger" onClick={this.saveFile}>
-          <strong>save as a file <span className="fas fa-file"></span>  </strong>
+          <strong> save as a file <span className="fas fa-file"></span>  </strong>
         </button>
       </div>
     </>)
   }
 }
 
-export default Intro
+export default Studio

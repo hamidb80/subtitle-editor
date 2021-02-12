@@ -4,6 +4,7 @@ type Props = {
   text?: string
   className?: string
   iconClassName: string
+  disabled?: boolean
   onClick: (me: MouseEvent) => void
 }
 
@@ -12,7 +13,8 @@ class CircleBtn extends React.Component<Props> {
   render() {
     return (<>
       <div className={"d-inline-block " + this.props.className}>
-        <button className="btn circle-btn add-caption-btn" onClick={this.props.onClick}>
+        <button className={"btn circle-btn add-caption-btn " + (this.props.disabled ? 'disabled' : '')}
+          onClick={this.props.onClick}>
           <span className={this.props.iconClassName}></span>
         </button>
 

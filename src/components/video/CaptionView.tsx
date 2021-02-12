@@ -1,5 +1,5 @@
 import React from 'react'
-import { Caption } from "../../utils/types"
+import { Caption } from "../../utils/caption"
 import '../../styles/components/caption-view.sass'
 
 type Props = {
@@ -16,8 +16,9 @@ class CaptionView extends React.Component<Props> {
   }
 
   getCaptionContent(): string {
-    const t = this.props.currentTime
-    const cap = this.props.captions.find((c: Caption) => t >= c.start && t <= c.end)
+    const
+      t = this.props.currentTime,
+      cap = this.props.captions.find((c: Caption) => t >= c.start && t <= c.end)
 
     return cap ? cap.content : ''
   }
@@ -25,17 +26,15 @@ class CaptionView extends React.Component<Props> {
   render() {
     const content = this.getCaptionContent()
 
-    if (content === '')
-      return <div className="caption-group"></div>
-
-    else
-      return (
-        <div className={"caption-group " + (this.props.fullScreen ? 'fullscreen' : '')}>
+    return (
+      <div className={"caption-group " + (this.props.fullScreen ? 'fullscreen' : '')} >
+        {content === "" ? '' :
           <div className="caption">
             {content}
           </div>
-        </div>
-      )
+        }
+      </div>
+    )
   }
 }
 

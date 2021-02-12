@@ -1,6 +1,8 @@
 import React, { ChangeEvent, FocusEvent } from 'react'
 import { second2timestamp, timestamp2seconds } from "../../utils/timestamp"
 
+import { CircleBtn } from "../form"
+
 import '../../styles/components/time-controll.sass'
 
 type Props = {
@@ -38,9 +40,9 @@ class TimeControll extends React.Component<Props, State> {
     const newTimeString = e.target.value
     let newTime: number
 
-    try {
-      newTime = timestamp2seconds(newTimeString)
-    } catch (error) { return }
+
+    try { newTime = timestamp2seconds(newTimeString) }
+    catch (error) { return }
 
     const delataTime = newTime - this.props.time
 
@@ -57,54 +59,62 @@ class TimeControll extends React.Component<Props, State> {
       this.props.onChange(changedValue)
   }
 
-
   render() {
-    const disabled = this.props.onChange === undefined
-    const time = second2timestamp(this.props.time, "complete")
+    const
+      disabled = this.props.onChange === undefined,
+      time = second2timestamp(this.props.time, "complete"),
 
-    const timeElem = this.state.isEditing ?
-      (<div className="time-editor">
-        <input type="text" className="time-text-editor"
-          onChange={this.changeTimeEditing} value={this.state.timeEditing}
-          autoFocus onBlur={this.textEditorTimeChange} />
-      </div>
-      ) : (
-        <div className="time-text" onDoubleClick={() => this.changeEditingState(true)}>
-          <span> {time} </span>
+      timeElem = this.state.isEditing ?
+        (<div className="time-editor">
+          <input type="text" className="time-text-editor"
+            onChange={this.changeTimeEditing} value={this.state.timeEditing}
+            autoFocus onBlur={this.textEditorTimeChange} />
         </div>
-      )
+        ) : (
+          <div className="time-text" onDoubleClick={() => this.changeEditingState(true)}>
+            <span> {time} </span>
+          </div>
+        )
 
     return (
       <div className="time-control-wrapper">
-        <button
-          className={"btn circle-btn time-control-btn minus-time " + (disabled ? 'disabled' : '')}
-          onClick={() => this.changeHandler(-1)}>
-          <span className="fas fa-minus"></span>
-        </button>
+        <CircleBtn
+          className="time-control-btn minus-time"
+          disabled={disabled}
+          iconClassName="fas fa-minus"
+          onClick={() => this.changeHandler(-1)}
+        />
 
-        <button
-          className={"btn circle-btn time-control-btn minus-time little " + (disabled ? 'disabled' : '')}
-          onClick={() => this.changeHandler(-0.1)}>
-          <span className="fas fa-minus"></span>
-        </button>
+        <CircleBtn
+          className="time-control-btn minus-time little"
+          disabled={disabled}
+          onClick={() => this.changeHandler(-0.1)}
+          iconClassName="fas fa-minus"
+        />
 
         {timeElem}
 
-        <button
-          className={"btn circle-btn time-control-btn add-time little " + (disabled ? 'disabled' : '')}
-          onClick={() => this.changeHandler(+0.1)}>
-          <span className="fas fa-plus"></span>
-        </button>
+        <CircleBtn
+          className="time-control-btn add-time little"
+          disabled={disabled}
 
-        <button className={"btn circle-btn time-control-btn add-time " + (disabled ? 'disabled' : '')}
-          onClick={() => this.changeHandler(+1)}>
-          <span className="fas fa-plus"></span>
-        </button>
+          onClick={() => this.changeHandler(+0.1)}
+          iconClassName="fas fa-plus"
+        />
 
-        <button className={"btn circle-btn time-control-btn add-time " + (disabled ? 'disabled' : '')}
-          onClick={() => this.changeHandler(null)}>
-          <span className="fas fa-angle-double-up"></span>
-        </button>
+        <CircleBtn
+          className="time-control-btn add-time"
+          disabled={disabled}
+          onClick={() => this.changeHandler(+1)}
+          iconClassName="fas fa-plus"
+        />
+
+        <CircleBtn
+          className="time-control-btn add-time"
+          disabled={disabled}
+          onClick={() => this.changeHandler(null)}
+          iconClassName="fas fa-angle-double-up"
+        />
       </div>
     )
   }

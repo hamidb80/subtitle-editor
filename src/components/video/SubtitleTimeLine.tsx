@@ -1,6 +1,6 @@
 import React, { MouseEvent, useState, ReactElement } from 'react'
 import { CircleBtn } from "../form"
-import { Caption } from "../../utils/types"
+import { Caption } from "../../utils/caption"
 import { second2timestamp } from "../../utils/timestamp"
 
 import "../../styles/components/subtitle-timeline.sass"
@@ -40,7 +40,6 @@ class SubtitleTimeline extends React.Component<Props, State> {
     this.zoom = this.zoom.bind(this)
     this.drawTimeRuler = this.drawTimeRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
-    this.onKeyDown = this.onKeyDown.bind(this)
   }
 
   // --------------------------- methods ---------------------
@@ -70,19 +69,6 @@ class SubtitleTimeline extends React.Component<Props, State> {
     }
   }
 
-  // TODO
-  onKeyDown(key: string) {
-    if (key === "Escape") {
-      console.log('esc')
-
-    }
-    else if (key === 'Delete') {
-      console.log('esc')
-    }
-
-    console.log(key)
-  }
-
   drawTimeRuler() {
     const ctx = this.canvasRef.current?.getContext('2d')
     if (ctx)
@@ -109,16 +95,10 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   render() {
-    const scale = this.state.scale
-
-    let caps: JSX.Element[] = []
-    if (this.props.captions)
-      caps = captionItems(this.props.captions, this.props.selectedCaption_i, this.captionSelectionHandler, scale)
-
     const
+      scale = this.state.scale,
       duration = this.props.duration,
       percent = -(this.props.currentTime - timelineCursorOffset) / duration * 100
-
 
     return (
       <div className={"advanced-timeline " + this.props.className}>
@@ -134,16 +114,18 @@ class SubtitleTimeline extends React.Component<Props, State> {
             onClick={() => this.zoom(-10)}
             iconClassName="fas fa-search-minus"
           />
+
           <div className="center">
             {scale}
           </div>
-
         </div>
 
         <div className="advanced-timeline-wrapper">
+
           <div className="current-time-cursor" style={{
             marginLeft: `${timelineCursorOffset * scale}px`,
           }}></div>
+
           <div className="mover" style={{
             transform: `translateX(${percent}%)`,
             width: `${duration * scale}px`,
@@ -157,22 +139,20 @@ class SubtitleTimeline extends React.Component<Props, State> {
             </div>
 
             <div className="captions-side">
-              {caps}
+              {this.props.captions.map((c: Caption, i) =>
+                captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
+              }
             </div>
 
           </div>
         </div>
+
       </div>
     )
   }
 }
 
 // captions
-function captionItems(caps: Caption[], selected_i: null | number, clickFunc: (index: number) => void, scale: number): JSX.Element[] {
-  let i = 0
-  return caps.map((c: Caption) => captionItem(c, i++, selected_i, clickFunc, scale))
-}
-
 function captionItem(c: Caption, index: number, selected_i: null | number, clickFunc: (index: number) => void, scale: number): JSX.Element {
   const width = c.end - c.start
 
@@ -193,7 +173,6 @@ function captionItem(c: Caption, index: number, selected_i: null | number, click
 type USPROPS = {
   onTimePick: (userCursorX: number) => void
 }
-
 const UserCursorElem: React.FC<USPROPS> = (props: USPROPS): ReactElement => {
   let [cursorXPos, setCursor] = useState(0)
 

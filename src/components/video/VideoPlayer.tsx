@@ -13,7 +13,7 @@ type Props = {
 
 class VideoPlayer extends React.Component<Props> {
   videoElementRef: React.RefObject<HTMLVideoElement>
-  timer: number = 0
+  timer: number = 0 // for settimeout
 
   state: {
     lastStart: number
@@ -57,11 +57,6 @@ class VideoPlayer extends React.Component<Props> {
       const currentTime = e.currentTarget.currentTime
       this.props.onTimeUpdate(currentTime)
     }
-  }
-
-
-  onContextmenu(e: MouseEvent<any>) {
-    e.preventDefault()
   }
 
   onMouseMove(e: MouseEvent) {
@@ -115,7 +110,7 @@ class VideoPlayer extends React.Component<Props> {
         onMouseMove={this.onMouseMove} onMouseOut={this.disableVideoControllers}>
 
         <div className="video-screen"
-          onContextMenu={this.onContextmenu}>
+          onContextMenu={e => e.preventDefault()}>
 
           <video
             onTimeUpdate={this.onTimeUpdate}

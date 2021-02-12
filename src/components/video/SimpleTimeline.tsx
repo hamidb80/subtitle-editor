@@ -40,17 +40,20 @@ class SimpleTimeline extends React.Component<Props> {
     if (this.props.totalTime === undefined)
       return ''
 
-    const widthPercent = this.props.currentTime / this.props.totalTime * 100
-    const time = second2timestamp(this.props.currentTime, "minute")
-    const duration = second2timestamp(this.props.totalTime, "minute")
+    const
+      widthPercent = this.props.currentTime / this.props.totalTime * 100,
+      time = second2timestamp(this.props.currentTime, "minute"),
+      duration = second2timestamp(this.props.totalTime, "minute")
 
     return (
       <div className={"timeline " + this.props.className + (this.props.fullScreen ? ' fullscreen' : '')}
         onClick={this.handleClick}>
+        
         <div className="progress">
           <div className="progress-bar" style={{ width: `${widthPercent}%` }}></div>
           <div className="cursor"></div>
         </div>
+
         <div className="time-text-wrapper">
           <div className="time-text">
             <span> {time} </span>
@@ -58,6 +61,7 @@ class SimpleTimeline extends React.Component<Props> {
             <span> {duration} </span>
           </div>
         </div>
+
       </div>
     )
   }
