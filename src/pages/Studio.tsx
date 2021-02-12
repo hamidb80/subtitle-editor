@@ -8,19 +8,18 @@ import { timestamp2seconds } from "../utils/timestamp"
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn } from "../components/form"
 
-import "../styles/pages/studio.sass"
+import "./studio.sass"
 
 const fileDownload = require('js-file-download')
 
 const MAX_HISTORY = 5,
   SHOOT_TIME_MAJOR = 5,
-  SHOOT_TIME_MINOR = 0.5,
-  ADD_CAPTION_TIME = 0.3
+  SHOOT_TIME_MINOR = 0.5
+  // ADD_CAPTION_TIME = 0.3
 
 let capsHistory: string[] = []
 
 
-// TODO add page subscriable key-event and
 class Studio extends React.Component {
   state: {
     videoUrl: string
@@ -58,7 +57,6 @@ class Studio extends React.Component {
     this.onCaptionSelected = this.onCaptionSelected.bind(this)
     this.clearCaptions = this.clearCaptions.bind(this)
 
-
     this.captureLastStates = this.captureLastStates.bind(this)
     this.undo = this.undo.bind(this)
 
@@ -69,22 +67,9 @@ class Studio extends React.Component {
   componentDidMount() {
     setTimeout(this.loadCaptions, 1000)
 
-    hotkeys.filter = () => true
+    hotkeys.filter = () => true // to make it work also in input elements
 
     hotkeys('alt+*,tab', kv => { kv.preventDefault() })
-
-    hotkeys('ctrl+home', kv => {
-      kv.preventDefault()
-
-      if (this.state.selected_caption_i === null)
-        this.VideoPlayerRef.current?.setTime(0)
-    })
-    hotkeys('ctrl+end', kv => {
-      kv.preventDefault()
-
-      if (this.state.selected_caption_i === null)
-        this.VideoPlayerRef.current?.setTime(this.state.totalTime)
-    })
 
     hotkeys('ctrl+shift+left', kv => {
       if (this.state.selected_caption_i === null) {
@@ -143,15 +128,12 @@ class Studio extends React.Component {
       kv.preventDefault()
       this.saveFile()
     })
-
-    hotkeys('ctrl-+', { splitKey: '-' }, function(e) {
-      console.log('you pressed ctrl and +');
-    });
   }
   componentWillUnmount() {
     hotkeys.unbind()
   }
 
+  // TODO put it into another file
   async loadCaptions() {
     const response = await fetch(appStates.subtitleUrl.getData()),
       data = await response.text(),
@@ -192,7 +174,6 @@ class Studio extends React.Component {
     this.captureLastStates()
 
     const newCaps = this.state.captions
-
     newCaps.push({
       start: this.state.currentTime,
       end: this.state.currentTime + 1,

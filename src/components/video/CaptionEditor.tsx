@@ -4,7 +4,7 @@ import hotkeys from 'hotkeys-js'
 import { TimeControll } from "."
 import { Caption } from "../../utils/caption"
 
-import '../../styles/components/caption-editor.sass'
+import './caption-editor.sass'
 
 
 type Props = {
@@ -37,6 +37,7 @@ class CaptionEditor extends React.Component<Props, State> {
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
   }
   componentDidMount(){
+    // TODO constants
     hotkeys('alt+left', kv => {
       this.onCaptionTimeRangeChange(-0.5, 0)
     })
@@ -69,11 +70,12 @@ class CaptionEditor extends React.Component<Props, State> {
   onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
     this.setState({ content2change: e.target.value })
   }
-
+  // null value for stick time button
   onCaptionTimeRangeChange(startChange: number | null = 0, endChange: number | null = 0) {
     if (this.state.caption_i !== null) {
       const cap = this.props.captions[this.state.caption_i]
 
+      // controll the caption start/end time 
       if (startChange === null)
         cap.start = this.props.currentTime
       else

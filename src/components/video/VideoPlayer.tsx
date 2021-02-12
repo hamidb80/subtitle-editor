@@ -1,6 +1,6 @@
 import React, { SyntheticEvent, MouseEvent } from 'react'
 
-import "../../styles/components/video-player.sass"
+import "./video-player.sass"
 
 const videoControllHiddingDelay = 2
 

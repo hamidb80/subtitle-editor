@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import { Intro, Studio } from "./pages"
 
-import "./styles/app.sass"
+import "./global.sass"
 
 class App extends React.Component {
   render() {

@@ -1,7 +1,7 @@
 import React, { MouseEvent } from 'react'
 import { second2timestamp } from "../../utils/timestamp"
 
-import '../../styles/components/simple-timeline.sass'
+import './simple-timeline.sass'
 
 type Props = {
   className?: string

@@ -3,7 +3,7 @@ import { second2timestamp, timestamp2seconds } from "../../utils/timestamp"
 
 import { CircleBtn } from "../form"
 
-import '../../styles/components/time-controll.sass'
+import './time-controll.sass'
 
 type Props = {
   time: number // per seconds

@@ -1,5 +1,5 @@
 import React, { ChangeEvent, createRef, RefObject } from 'react'
-import '../../styles/components/file-input.sass'
+import './file-input.sass'
 
 type Props = {
 	onChange?: (f: File) => void

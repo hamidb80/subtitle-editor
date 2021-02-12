@@ -1,11 +1,11 @@
-import React, { MouseEvent, useState, ReactElement } from 'react'
+import React, { MouseEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 
 import { CircleBtn } from "../form"
 import { Caption } from "../../utils/caption"
 import { second2timestamp } from "../../utils/timestamp"
 
-import "../../styles/components/subtitle-timeline.sass"
+import "./subtitle-timeline.sass"
 
 const timelineCursorOffset = 4 // per seconds
 
@@ -50,12 +50,11 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   zoom(value: number) {
-    if (this.state.scale + value <= 0)
-      return
+    const new_val = this.state.scale + value
 
-    this.setState(prevState => ({
-      scale: prevState.scale + value
-    }))
+    // TODO add firefox canvas limit
+    if (!(new_val <= 0 || new_val > 100))
+      this.setState({ scale: new_val })
   }
 
   setTimeFromPixels(timePerPixels: number) {

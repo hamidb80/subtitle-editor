@@ -1,5 +1,7 @@
 import React, { MouseEvent } from 'react'
 
+import './circle-btn.sass'
+
 type Props = {
   text?: string
   className?: string

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Caption } from "../../utils/caption"
-import '../../styles/components/caption-view.sass'
+import './caption-view.sass'
 
 type Props = {
   currentTime: number
