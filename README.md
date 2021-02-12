@@ -7,6 +7,8 @@ web based subtitle editor
 [] add shortcuts
 [] add more details & comments about components
 [] add test
+[] add help
+[] add constants to another file
 
 
 `npm install yarn`

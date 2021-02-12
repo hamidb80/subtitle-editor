@@ -97,6 +97,10 @@ class VideoPlayer extends React.Component<Props> {
     }
   }
 
+  togglePlay() {
+    this.setPlay(!this.isPlaying())
+  }
+
   isPlaying(): boolean {
     return Boolean(this.videoElementRef.current && !this.videoElementRef.current.paused)
   }

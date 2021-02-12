@@ -1,4 +1,5 @@
 import React from 'react'
+import hotkeys from 'hotkeys-js'
 
 import appStates from "../utils/states"
 import { Caption, captionsToFileString } from "../utils/caption"
@@ -11,11 +12,15 @@ import "../styles/pages/studio.sass"
 
 const fileDownload = require('js-file-download')
 
-const MAX_HISTORY = 5
+const MAX_HISTORY = 5,
+  SHOOT_TIME_MAJOR = 5,
+  SHOOT_TIME_MINOR = 0.5,
+  ADD_CAPTION_TIME = 0.3
+
 let capsHistory: string[] = []
 
 
-// TODO add page subscriable key-event and 
+// TODO add page subscriable key-event and
 class Studio extends React.Component {
   state: {
     videoUrl: string
@@ -51,6 +56,7 @@ class Studio extends React.Component {
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
     this.onCaptionSelected = this.onCaptionSelected.bind(this)
+    this.clearCaptions = this.clearCaptions.bind(this)
 
 
     this.captureLastStates = this.captureLastStates.bind(this)
@@ -58,6 +64,92 @@ class Studio extends React.Component {
 
     this.loadCaptions = this.loadCaptions.bind(this)
     this.saveFile = this.saveFile.bind(this)
+  }
+
+  componentDidMount() {
+    setTimeout(this.loadCaptions, 1000)
+
+    hotkeys.filter = () => true
+
+    hotkeys('alt+*,tab', kv => { kv.preventDefault() })
+
+    hotkeys('ctrl+home', kv => {
+      kv.preventDefault()
+
+      if (this.state.selected_caption_i === null)
+        this.VideoPlayerRef.current?.setTime(0)
+    })
+    hotkeys('ctrl+end', kv => {
+      kv.preventDefault()
+
+      if (this.state.selected_caption_i === null)
+        this.VideoPlayerRef.current?.setTime(this.state.totalTime)
+    })
+
+    hotkeys('ctrl+shift+left', kv => {
+      if (this.state.selected_caption_i === null) {
+        kv.preventDefault()
+        this.VideoPlayerRef.current?.shootTime(-SHOOT_TIME_MAJOR)
+      }
+    })
+    hotkeys('ctrl+shift+right', kv => {
+      if (this.state.selected_caption_i === null) {
+        kv.preventDefault()
+        this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MAJOR)
+      }
+    })
+    hotkeys('ctrl+left', kv => {
+      if (this.state.selected_caption_i === null) {
+        kv.preventDefault()
+        this.VideoPlayerRef.current?.shootTime(-SHOOT_TIME_MINOR)
+      }
+    })
+    hotkeys('ctrl+right', kv => {
+      if (this.state.selected_caption_i === null) {
+        kv.preventDefault()
+        this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MINOR)
+      }
+    })
+
+    hotkeys('ctrl+enter', this.addCaption)
+
+    hotkeys('ctrl+down', kv => {
+      kv.preventDefault()
+
+      const t = this.state.currentTime,
+        i = this.state.captions.findIndex(c => t >= c.start && t <= c.end)
+
+      if (i !== -1)
+        this.setState({ selected_caption_i: i })
+    })
+    hotkeys('ctrl+up, escape', kv => {
+      kv.preventDefault()
+      this.setState({ selected_caption_i: null })
+    })
+
+    hotkeys('space', kv => {
+      // @ts-ignore
+      if (kv.target.tagName !== 'INPUT')
+        kv.preventDefault()
+    })
+    hotkeys('ctrl+space', kv => {
+      this.VideoPlayerRef.current?.togglePlay()
+    })
+
+    hotkeys('ctrl+delete', this.onCaptionDeleted)
+
+    hotkeys('ctrl+z', this.undo)
+    hotkeys('ctrl+s', kv => {
+      kv.preventDefault()
+      this.saveFile()
+    })
+
+    hotkeys('ctrl-+', { splitKey: '-' }, function(e) {
+      console.log('you pressed ctrl and +');
+    });
+  }
+  componentWillUnmount() {
+    hotkeys.unbind()
   }
 
   async loadCaptions() {
@@ -72,10 +164,6 @@ class Studio extends React.Component {
       }))
 
     this.setState({ captions: caps })
-  }
-
-  componentDidMount() {
-    setTimeout(this.loadCaptions, 1000)
   }
 
   onTimeUpdate(nt: number) { // nt: new time
@@ -142,6 +230,10 @@ class Studio extends React.Component {
     const newState = this.state.selected_caption_i === id ? null : id
 
     this.setState({ selected_caption_i: newState })
+  }
+  clearCaptions() {
+    this.captureLastStates()
+    this.setState({ captions: [] })
   }
 
   captureLastStates() {
@@ -212,7 +304,13 @@ class Studio extends React.Component {
             iconClassName="fas fa-trash"
             disabled={this.state.selected_caption_i === null}
             text="delete"
-            onClick={() => this.onCaptionDeleted()}
+            onClick={this.onCaptionDeleted}
+          />
+
+          <CircleBtn
+            iconClassName="fas fa-broom"
+            text="clear timeline"
+            onClick={this.clearCaptions}
           />
 
         </div>

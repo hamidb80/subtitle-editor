@@ -1,4 +1,6 @@
 import React, { MouseEvent, useState, ReactElement } from 'react'
+import hotkeys from 'hotkeys-js'
+
 import { CircleBtn } from "../form"
 import { Caption } from "../../utils/caption"
 import { second2timestamp } from "../../utils/timestamp"
@@ -59,15 +61,6 @@ class SubtitleTimeline extends React.Component<Props, State> {
   setTimeFromPixels(timePerPixels: number) {
     this.props.onSelectNewTime(timePerPixels / this.state.scale)
   }
-  //  ------------------- component API ----------------------
-
-  componentDidUpdate() {
-    // to prevent useless rerender
-    if (this.state.lastScale !== this.state.scale) {
-      this.setState({ lastScale: this.state.scale })
-      this.drawTimeRuler()
-    }
-  }
 
   drawTimeRuler() {
     const ctx = this.canvasRef.current?.getContext('2d')
@@ -94,6 +87,28 @@ class SubtitleTimeline extends React.Component<Props, State> {
       }
   }
 
+  //  ------------------- component API ----------------------
+
+  // TODO: add constant
+  componentDidMount() {
+    hotkeys('ctrl+=', kv => {
+      kv.preventDefault()
+      this.zoom(+10)
+    })
+    hotkeys('ctrl+-', kv => {
+      kv.preventDefault()
+      this.zoom(-10)
+    })
+  }
+
+  componentDidUpdate() {
+    // to prevent useless rerender
+    if (this.state.lastScale !== this.state.scale) {
+      this.setState({ lastScale: this.state.scale })
+      this.drawTimeRuler()
+    }
+  }
+
   render() {
     const
       scale = this.state.scale,
@@ -109,15 +124,16 @@ class SubtitleTimeline extends React.Component<Props, State> {
             onClick={() => this.zoom(+10)}
             iconClassName="fas fa-search-plus"
           />
+
+          <div className="center scale-text">
+            {scale}
+          </div>
+
           <CircleBtn
             className="mb-1"
             onClick={() => this.zoom(-10)}
             iconClassName="fas fa-search-minus"
           />
-
-          <div className="center">
-            {scale}
-          </div>
         </div>
 
         <div className="advanced-timeline-wrapper">
@@ -163,9 +179,8 @@ function captionItem(c: Caption, index: number, selected_i: null | number, click
         left: `${c.start * scale}px`,
         width: `${width * scale}px`
       }}>
-      <span>
-        {c.content}
-      </span>
+
+      <span> {c.content} </span>
     </div>
   )
 }
@@ -173,30 +188,28 @@ function captionItem(c: Caption, index: number, selected_i: null | number, click
 type USPROPS = {
   onTimePick: (userCursorX: number) => void
 }
-const UserCursorElem: React.FC<USPROPS> = (props: USPROPS): ReactElement => {
-  let [cursorXPos, setCursor] = useState(0)
+class UserCursorElem extends React.Component<USPROPS> {
+  state = { cursorXPos: 0 }
 
-  const
-    calculateRealOffset = (e: MouseEvent) => {
-      const mouseX = e.pageX, // based on the screen
-        PostionOfElem = e.currentTarget.getBoundingClientRect()
+  calculateRealOffset(e: MouseEvent) {
+    const mouseX = e.pageX, // based on the screen
+      PostionOfElem = e.currentTarget.getBoundingClientRect()
 
-      return mouseX - PostionOfElem.left
-    },
-    mouseMove = (e: MouseEvent) => setCursor(calculateRealOffset(e)),
-    onClick = (e: MouseEvent) => props.onTimePick(calculateRealOffset(e))
+    return mouseX - PostionOfElem.left
+  }
 
+  render() {
+    return (
+      <div className="user-time-cursor-wrapper"
+        onMouseMove={e => this.setState({ cursorXPos: this.calculateRealOffset(e) })}
+        onMouseLeave={() => this.setState({ cursorXPos: 0 })}
+        onClick={e => this.props.onTimePick(this.calculateRealOffset(e))} >
 
-  return (
-    <div className="user-time-cursor-wrapper"
-      onMouseMove={mouseMove} onMouseLeave={() => setCursor(0)}
-      onClick={onClick}>
-
-      <div className="user-time-cursor"
-        style={{ transform: `translateX(${cursorXPos}px)` }}
-      ></div>
-    </div>
-  )
+        <div className="user-time-cursor"
+          style={{ transform: `translateX(${this.state.cursorXPos}px)` }}></div>
+      </div >
+    )
+  }
 }
 
 export default SubtitleTimeline

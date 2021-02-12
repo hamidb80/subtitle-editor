@@ -10,7 +10,7 @@ function digitalClock(num: number, numberOfZeroes: number = 2): string {
     return '0'.repeat(numberOfZeroes - i) + String(num)
 }
 
-// TODO: minutes are diffrent in diffrent modes
+// FIXME: minutes are diffrent in diffrent modes
 function second2timestamp(total_seconds: number, mode: 'minute' | 'minute+ms' | 'complete'): string {
     const miliseconds = Math.floor((total_seconds % 1) * 1000),
         seconds = Math.floor(total_seconds % 60),
