@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from "react-router-dom";
+import { Link } from "react-router-dom"
 
 import FileInput from "../components/form/FileInput"
 import appStates from "../utils/states"

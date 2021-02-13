@@ -1,18 +1,22 @@
 # web based subtitle editor
 
-## TODO
+## TODOS
 - [ ] add help
+- [ ] add demo
 - [ ] add some tests
 - [ ] add more details & comments about components
-- [ ] add autosave every 5 minuts on client's browser
+- [ ] darggable captions
+- [ ] redo
 
 ## features
-
-
-if you dont have Yarn:
-`npm install yarn`
+* shortcuts/mouse
+* nice ux/ui
+* undo/redo
 
 ## commands:
+`npm install yarn`
+if you dont have Yarn:
+
 `yarn install`
 install dependencies
 

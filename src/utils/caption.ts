@@ -1,10 +1,11 @@
 import { second2timestamp, timestamp2seconds } from "./timestamp"
+import { v4 as uuid } from "uuid"
 
 export type Caption = {
   start: number
   end: number
   content: string
-  // TODO hash_key: string => to render chages properly
+  hash: string // for rendering
 }
 
 export function captionsCompare(a: Caption, b: Caption): number {
@@ -26,6 +27,7 @@ export function parseSrt(content: string): Caption[] {
   return matches.map(m => ({
     start: timestamp2seconds(m[1]),
     end: timestamp2seconds(m[2]),
-    content: m[3].trim()
+    content: m[3].trim(),
+    hash: uuid()
   }))
 }

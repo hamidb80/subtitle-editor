@@ -63,6 +63,12 @@ class SubtitleTimeline extends React.Component<Props, State> {
     if (!(new_val <= 0 || new_val > MAX_SCALE || new_val * this.props.duration > MAX_CANVAS_SIZE))
       this.setState({ scale: new_val })
   }
+  zoomIn() {
+    this.zoom(+SHOOT_ZOOM)
+  }
+  zoomOut() {
+    this.zoom(-SHOOT_ZOOM)
+  }
 
   setTimeFromPixels(timePerPixels: number) {
     this.props.onSelectNewTime(timePerPixels / this.state.scale)
@@ -94,8 +100,8 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   //  ------------------- component API ----------------------
-
   componentDidMount() {
+    // --- adapt timeline width with webbrowsers support
     let currentScale = this.state.scale
     while (currentScale * this.props.duration > MAX_CANVAS_SIZE)
       currentScale -= SHOOT_ZOOM
@@ -105,7 +111,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
     else
       this.setState({ scale: currentScale })
 
-
+    // --- register shortcuts
     hotkeys('ctrl+=', kv => {
       kv.preventDefault()
       this.zoomIn()
@@ -115,9 +121,6 @@ class SubtitleTimeline extends React.Component<Props, State> {
       this.zoomOut()
     })
   }
-
-  zoomIn() { this.zoom(+SHOOT_ZOOM) }
-  zoomOut() { this.zoom(-SHOOT_ZOOM) }
 
   componentDidUpdate() {
     // to prevent useless rerender
@@ -199,7 +202,7 @@ function captionItem(c: Caption, index: number, selected_i: null | number, click
 
   return (
     <div className={"caption-item " + (selected_i === index ? 'selected' : '')}
-      key={index} onClick={e => clickFunc(index)}
+      key={c.hash} onClick={e => clickFunc(index)}
       style={{
         left: `${c.start * scale}px`,
         width: `${width * scale}px`

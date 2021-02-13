@@ -10,14 +10,12 @@ import './caption-editor.sass'
 
 
 type Props = {
-  currentTime: number
-
-  captions: Caption[]
-  selectedCaption_i: number | null
-  onCaptionChanged: (index: number, c: Caption) => void
+  currentTime: number // for stick time button
+  caption: Caption | null
+  onCaptionChanged: (c: Caption) => void
 }
 type State = {
-  caption_i: number | null
+  my_caption: Caption | null,
   content2change: string
 }
 
@@ -28,8 +26,8 @@ class CaptionEditor extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      caption_i: null,
-      content2change: ''
+      my_caption: null,
+      content2change: ""
     }
 
     this.inputRef = React.createRef()
@@ -38,7 +36,7 @@ class CaptionEditor extends React.Component<Props, State> {
     this.onCaptionTimeRangeChange = this.onCaptionTimeRangeChange.bind(this)
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
   }
-  componentDidMount(){
+  componentDidMount() {
     hotkeys('alt+left', () => {
       this.onCaptionTimeRangeChange(-SHOOT_TIME_MINOR, 0)
     })
@@ -57,13 +55,13 @@ class CaptionEditor extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if (this.props.selectedCaption_i !== this.state.caption_i) {
+    if (this.props.caption?.hash !== this.state.my_caption?.hash) {
+
       this.handleCaptionChange() // onblur is not triggered when you blur it by code, so this line solves the problem
 
       this.setState({
-        caption_i: this.props.selectedCaption_i,
-        content2change: this.props.selectedCaption_i !== null ?
-          this.props.captions[this.props.selectedCaption_i].content : ''
+        my_caption: this.props.caption === null ? null : { ...this.props.caption },
+        content2change: this.props.caption !== null ? this.props.caption.content : ""
       })
     }
   }
@@ -73,8 +71,8 @@ class CaptionEditor extends React.Component<Props, State> {
   }
   // null value for stick time button
   onCaptionTimeRangeChange(startChange: number | null = 0, endChange: number | null = 0) {
-    if (this.state.caption_i !== null) {
-      const cap = this.props.captions[this.state.caption_i]
+    if (this.state.my_caption !== null) {
+      const cap = this.state.my_caption
 
       // controll the caption start/end time 
       if (startChange === null)
@@ -95,30 +93,24 @@ class CaptionEditor extends React.Component<Props, State> {
           cap.start = cap.end
       }
 
-      this.props.onCaptionChanged(this.state.caption_i, cap)
+      this.props.onCaptionChanged(cap)
     }
   }
 
   handleCaptionChange() {
-    // the caption maybe deleted ...
-    if (this.state.caption_i !== null && this.state.caption_i < this.props.captions.length) {
-      const cap = this.props.captions[this.state.caption_i]
-
-      // only trigger the event when content changed
-      if (cap.content !== this.state.content2change) {
-        cap.content = this.state.content2change
-        this.props.onCaptionChanged(this.state.caption_i, cap)
-      }
+    // only trigger the event when content changed
+    if (this.state.my_caption &&
+      ((this.props.caption && this.props.caption.content !== this.state.content2change) || this.props.caption === null)) {
+      // this.state.my_caption.content = this.state.content2change
+      const cap = this.state.my_caption
+      cap.content = this.state.content2change
+      
+      this.props.onCaptionChanged(cap)
     }
   }
 
   render() {
-    let cap: Caption | null = null // myabe it's not available [for eg it can be removed]
-
-    if (this.state.caption_i !== null)
-      try { cap = this.props.captions[this.state.caption_i] }
-      catch (err) { }
-
+    const cap = this.props.caption // myabe it's not available [for eg it can be removed]
     if (cap)
       this.inputRef.current?.focus()
 

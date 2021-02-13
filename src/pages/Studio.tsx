@@ -1,5 +1,6 @@
 import React from 'react'
 import hotkeys from 'hotkeys-js'
+import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
 import { Caption, export2srt } from "../utils/caption"
@@ -14,17 +15,16 @@ const fileDownload = require('js-file-download')
 
 
 let capsHistory: string[] = []
+type State = {
+  videoUrl: string
 
-class Studio extends React.Component {
-  state: {
-    videoUrl: string
+  currentTime: number
+  totalTime: number
 
-    currentTime: number
-    totalTime: number
-
-    captions: Caption[]
-    selected_caption_i: null | number
-  }
+  captions: Caption[]
+  selected_caption_i: number | null
+}
+class Studio extends React.Component<{}, State> {
 
   VideoPlayerRef: React.RefObject<VideoPlayer>
 
@@ -59,7 +59,7 @@ class Studio extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({captions: appStates.subtitles.getData()})
+    this.setState({ captions: appStates.subtitles.getData() })
 
     hotkeys.filter = () => true // to make it work also in input elements
 
@@ -156,7 +156,8 @@ class Studio extends React.Component {
     newCaps.push({
       start: this.state.currentTime,
       end: this.state.currentTime + 1,
-      content: "New Caption"
+      content: "New Caption",
+      hash: uuid()
     })
 
     this.setState({
@@ -164,14 +165,17 @@ class Studio extends React.Component {
       selected_caption_i: newCaps.length - 1,
     })
   }
-  onChangeCaption(ind: number, c: Caption) {
-    // TODO: check hash key 
-    this.captureLastStates()
+  onChangeCaption(new_c: Caption) {
+    const ind = this.state.captions.findIndex(c => c.hash == new_c.hash)
+    
+    if (ind !== -1) {
+      this.captureLastStates()
 
-    const caps = this.state.captions
-    caps[ind] = c
+      new_c.hash = uuid()
+      this.state.captions[ind] = new_c
 
-    this.setState({ captions: caps })
+      this.setState(({ captions: this.state.captions }))
+    }
   }
   onCaptionDeleted() {
     if (this.state.selected_caption_i === null)
@@ -290,8 +294,9 @@ class Studio extends React.Component {
 
         <CaptionEditor
           currentTime={this.state.currentTime}
-          captions={this.state.captions}
-          selectedCaption_i={this.state.selected_caption_i}
+          caption={this.state.selected_caption_i === null ? null : this.state.captions[this.state.selected_caption_i]}
+          // captions={this.state.captions}
+          // selectedCaption_i={this.state.selected_caption_i}
           onCaptionChanged={this.onChangeCaption}
         />
 
