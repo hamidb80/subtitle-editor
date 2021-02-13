@@ -4,6 +4,8 @@ import hotkeys from 'hotkeys-js'
 import { TimeControll } from "."
 import { Caption } from "../../utils/caption"
 
+import { SHOOT_TIME_MINOR } from "../../utils/consts"
+
 import './caption-editor.sass'
 
 
@@ -37,21 +39,20 @@ class CaptionEditor extends React.Component<Props, State> {
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
   }
   componentDidMount(){
-    // TODO constants
-    hotkeys('alt+left', kv => {
-      this.onCaptionTimeRangeChange(-0.5, 0)
+    hotkeys('alt+left', () => {
+      this.onCaptionTimeRangeChange(-SHOOT_TIME_MINOR, 0)
     })
-    hotkeys('alt+right', kv => {
-      this.onCaptionTimeRangeChange(+0.5, 0)
+    hotkeys('alt+right', () => {
+      this.onCaptionTimeRangeChange(+SHOOT_TIME_MINOR, 0)
     })
 
     hotkeys('tab+left', kv => {
       kv.preventDefault()
-      this.onCaptionTimeRangeChange(0, -0.5)
+      this.onCaptionTimeRangeChange(0, -SHOOT_TIME_MINOR)
     })
     hotkeys('tab+right', kv => {
       kv.preventDefault()
-      this.onCaptionTimeRangeChange(0, +0.5)
+      this.onCaptionTimeRangeChange(0, +SHOOT_TIME_MINOR)
     })
   }
 
@@ -99,7 +100,8 @@ class CaptionEditor extends React.Component<Props, State> {
   }
 
   handleCaptionChange() {
-    if (this.state.caption_i !== null) {
+    // the caption maybe deleted ...
+    if (this.state.caption_i !== null && this.state.caption_i < this.props.captions.length) {
       const cap = this.props.captions[this.state.caption_i]
 
       // only trigger the event when content changed

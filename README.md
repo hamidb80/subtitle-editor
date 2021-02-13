@@ -1,14 +1,10 @@
 # web based subtitle editor
 
 ## TODO
-- [ ] add demo
 - [ ] add help
-- [ ] add more details & comments about components
 - [ ] add some tests
-- [ ] add constants(zoom vars,...) to another file
+- [ ] add more details & comments about components
 - [ ] add autosave every 5 minuts on client's browser
-- [ ] add firefox browser limit to zoom in timeline
-- [ ] add supported video formats indiffrent browsers info
 
 ## features
 

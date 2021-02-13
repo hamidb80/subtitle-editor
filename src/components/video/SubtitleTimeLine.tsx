@@ -5,9 +5,11 @@ import { CircleBtn } from "../form"
 import { Caption } from "../../utils/caption"
 import { second2timestamp } from "../../utils/timestamp"
 
-import "./subtitle-timeline.sass"
+import {
+  MAX_SCALE, MAX_CANVAS_SIZE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET
+} from "../../utils/consts"
 
-const timelineCursorOffset = 4 // per seconds
+import "./subtitle-timeline.sass"
 
 type Props = {
   className?: string
@@ -21,6 +23,7 @@ type Props = {
   onCaptionSelected: (captionIndex: number) => void
 }
 type State = {
+  error: boolean
   lastScale: number
   scale: number
 }
@@ -32,16 +35,21 @@ class SubtitleTimeline extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      lastScale: 0,
-      scale: 30,
+      error: false,
+      lastScale: -10,
+      scale: DEFAULT_SCALE,
     }
+
     this.canvasRef = React.createRef()
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
-    this.zoom = this.zoom.bind(this)
     this.drawTimeRuler = this.drawTimeRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
+
+    this.zoom = this.zoom.bind(this)
+    this.zoomIn = this.zoomIn.bind(this)
+    this.zoomOut = this.zoomOut.bind(this)
   }
 
   // --------------------------- methods ---------------------
@@ -52,8 +60,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
   zoom(value: number) {
     const new_val = this.state.scale + value
 
-    // TODO add firefox canvas limit
-    if (!(new_val <= 0 || new_val > 100))
+    if (!(new_val <= 0 || new_val > MAX_SCALE || new_val * this.props.duration > MAX_CANVAS_SIZE))
       this.setState({ scale: new_val })
   }
 
@@ -88,31 +95,50 @@ class SubtitleTimeline extends React.Component<Props, State> {
 
   //  ------------------- component API ----------------------
 
-  // TODO: add constant
   componentDidMount() {
+    let currentScale = this.state.scale
+    while (currentScale * this.props.duration > MAX_CANVAS_SIZE)
+      currentScale -= SHOOT_ZOOM
+
+    if (currentScale <= 0)
+      this.setState({ error: true })
+    else
+      this.setState({ scale: currentScale })
+
+
     hotkeys('ctrl+=', kv => {
       kv.preventDefault()
-      this.zoom(+10)
+      this.zoomIn()
     })
     hotkeys('ctrl+-', kv => {
       kv.preventDefault()
-      this.zoom(-10)
+      this.zoomOut()
     })
   }
 
+  zoomIn() { this.zoom(+SHOOT_ZOOM) }
+  zoomOut() { this.zoom(-SHOOT_ZOOM) }
+
   componentDidUpdate() {
     // to prevent useless rerender
-    if (this.state.lastScale !== this.state.scale) {
+    if (this.state.lastScale !== this.state.scale
+      && this.props.duration !== 0) { // that's react & it's magic behaviors :-|
+
       this.setState({ lastScale: this.state.scale })
       this.drawTimeRuler()
     }
   }
 
   render() {
+    if (this.state.error)
+      return (<div className="center badge-danger">
+        sorry the video length is too large - web browsers have limit for canvas size
+      </div>)
+
     const
       scale = this.state.scale,
       duration = this.props.duration,
-      percent = -(this.props.currentTime - timelineCursorOffset) / duration * 100
+      percent = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100
 
     return (
       <div className={"advanced-timeline " + this.props.className}>
@@ -120,7 +146,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
         <div className="side-bar">
           <CircleBtn
             className="mb-1"
-            onClick={() => this.zoom(+10)}
+            onClick={this.zoomIn}
             iconClassName="fas fa-search-plus"
           />
 
@@ -130,7 +156,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
 
           <CircleBtn
             className="mb-1"
-            onClick={() => this.zoom(-10)}
+            onClick={this.zoomOut}
             iconClassName="fas fa-search-minus"
           />
         </div>
@@ -138,7 +164,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
         <div className="advanced-timeline-wrapper">
 
           <div className="current-time-cursor" style={{
-            marginLeft: `${timelineCursorOffset * scale}px`,
+            marginLeft: `${TIMELINE_CURSOR_OFFSET * scale}px`,
           }}></div>
 
           <div className="mover" style={{

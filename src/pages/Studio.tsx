@@ -2,8 +2,8 @@ import React from 'react'
 import hotkeys from 'hotkeys-js'
 
 import appStates from "../utils/states"
-import { Caption, captionsToFileString } from "../utils/caption"
-import { timestamp2seconds } from "../utils/timestamp"
+import { Caption, export2srt } from "../utils/caption"
+import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn } from "../components/form"
@@ -12,13 +12,8 @@ import "./studio.sass"
 
 const fileDownload = require('js-file-download')
 
-const MAX_HISTORY = 5,
-  SHOOT_TIME_MAJOR = 5,
-  SHOOT_TIME_MINOR = 0.5
-  // ADD_CAPTION_TIME = 0.3
 
 let capsHistory: string[] = []
-
 
 class Studio extends React.Component {
   state: {
@@ -60,12 +55,11 @@ class Studio extends React.Component {
     this.captureLastStates = this.captureLastStates.bind(this)
     this.undo = this.undo.bind(this)
 
-    this.loadCaptions = this.loadCaptions.bind(this)
     this.saveFile = this.saveFile.bind(this)
   }
 
   componentDidMount() {
-    setTimeout(this.loadCaptions, 1000)
+    this.setState({captions: appStates.subtitles.getData()})
 
     hotkeys.filter = () => true // to make it work also in input elements
 
@@ -133,21 +127,6 @@ class Studio extends React.Component {
     hotkeys.unbind()
   }
 
-  // TODO put it into another file
-  async loadCaptions() {
-    const response = await fetch(appStates.subtitleUrl.getData()),
-      data = await response.text(),
-      matches = Array.from(data.matchAll(/([\d,:]{12}) --> ([\d,:]{12})\n(.*)(?![\d,:]{12})/g)),
-
-      caps: Caption[] = matches.map(m => ({
-        start: timestamp2seconds(m[1]),
-        end: timestamp2seconds(m[2]),
-        content: m[3].trim()
-      }))
-
-    this.setState({ captions: caps })
-  }
-
   onTimeUpdate(nt: number) { // nt: new time
     const sci = this.state.selected_caption_i
     if (sci !== null) {
@@ -186,6 +165,7 @@ class Studio extends React.Component {
     })
   }
   onChangeCaption(ind: number, c: Caption) {
+    // TODO: check hash key 
     this.captureLastStates()
 
     const caps = this.state.captions
@@ -214,7 +194,7 @@ class Studio extends React.Component {
   }
   clearCaptions() {
     this.captureLastStates()
-    this.setState({ captions: [] })
+    this.setState({ captions: [], selected_caption_i: null })
   }
 
   captureLastStates() {
@@ -234,7 +214,7 @@ class Studio extends React.Component {
   }
 
   saveFile() {
-    fileDownload(captionsToFileString(this.state.captions), 'subtitle.srt');
+    fileDownload(export2srt(this.state.captions), 'subtitle.srt');
   }
 
   render() {
@@ -291,6 +271,7 @@ class Studio extends React.Component {
           <CircleBtn
             iconClassName="fas fa-broom"
             text="clear timeline"
+            disabled={this.state.captions.length === 0}
             onClick={this.clearCaptions}
           />
 

@@ -1,0 +1,14 @@
+export const
+  MAX_HISTORY = 5,
+  SHOOT_TIME_MAJOR = 5,
+  SHOOT_TIME_MINOR = 0.5,
+
+  ADD_CAPTION_TIME = 0.3,
+  
+  TIMELINE_CURSOR_OFFSET = 4, // per seconds
+  
+  SHOOT_ZOOM  = 10,
+  MAX_CANVAS_SIZE = 32767,
+  DEFAULT_SCALE = 30,
+  MAX_SCALE = 100
+
