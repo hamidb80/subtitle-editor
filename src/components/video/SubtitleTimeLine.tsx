@@ -50,6 +50,8 @@ class SubtitleTimeline extends React.Component<Props, State> {
     this.zoom = this.zoom.bind(this)
     this.zoomIn = this.zoomIn.bind(this)
     this.zoomOut = this.zoomOut.bind(this)
+    this.zoomInCond = this.zoomInCond.bind(this)
+    this.zoomOutCond = this.zoomOutCond.bind(this)
   }
 
   // --------------------------- methods ---------------------
@@ -60,8 +62,14 @@ class SubtitleTimeline extends React.Component<Props, State> {
   zoom(value: number) {
     const new_val = this.state.scale + value
 
-    if (!(new_val <= 0 || new_val > MAX_SCALE || new_val * this.props.duration > MAX_CANVAS_SIZE))
+    if (this.zoomInCond(new_val) && this.zoomOutCond(new_val))
       this.setState({ scale: new_val })
+  }
+  zoomInCond(val: number): boolean {
+    return val <= MAX_SCALE || val * this.props.duration > MAX_CANVAS_SIZE
+  }
+  zoomOutCond(val: number) {
+    return val > 0
   }
   zoomIn() {
     this.zoom(+SHOOT_ZOOM)
@@ -150,6 +158,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
           <CircleBtn
             className="mb-1"
             onClick={this.zoomIn}
+            disabled={!this.zoomInCond(this.state.scale + SHOOT_ZOOM)}
             iconClassName="fas fa-search-plus"
           />
 
@@ -160,6 +169,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
           <CircleBtn
             className="mb-1"
             onClick={this.zoomOut}
+            disabled={!this.zoomOutCond(this.state.scale - SHOOT_ZOOM)}
             iconClassName="fas fa-search-minus"
           />
         </div>

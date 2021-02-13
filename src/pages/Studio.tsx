@@ -3,7 +3,7 @@ import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
-import { Caption, export2srt } from "../utils/caption"
+import { Caption, export2srt, areSameCaptions } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
@@ -13,8 +13,6 @@ import "./studio.sass"
 
 const fileDownload = require('js-file-download')
 
-
-let capsHistory: string[] = []
 type State = {
   videoUrl: string
 
@@ -22,7 +20,10 @@ type State = {
   totalTime: number
 
   captions: Caption[]
-  selected_caption_i: number | null
+  selected_caption_i: number | null,
+
+  historyCursor: number
+  capsHistory: string[]
 }
 class Studio extends React.Component<{}, State> {
 
@@ -39,6 +40,9 @@ class Studio extends React.Component<{}, State> {
 
       captions: [],
       selected_caption_i: null,
+
+      historyCursor: -1,
+      capsHistory: []
     }
 
     this.VideoPlayerRef = React.createRef()
@@ -54,6 +58,7 @@ class Studio extends React.Component<{}, State> {
 
     this.captureLastStates = this.captureLastStates.bind(this)
     this.undo = this.undo.bind(this)
+    this.redo = this.redo.bind(this)
 
     this.saveFile = this.saveFile.bind(this)
   }
@@ -118,6 +123,7 @@ class Studio extends React.Component<{}, State> {
     hotkeys('ctrl+delete', this.onCaptionDeleted)
 
     hotkeys('ctrl+z', this.undo)
+    hotkeys('ctrl+y', this.redo)
     hotkeys('ctrl+s', kv => {
       kv.preventDefault()
       this.saveFile()
@@ -165,12 +171,14 @@ class Studio extends React.Component<{}, State> {
       selected_caption_i: newCaps.length - 1,
     })
   }
+
   onChangeCaption(new_c: Caption) {
-    const ind = this.state.captions.findIndex(c => c.hash == new_c.hash)
-    
-    if (ind !== -1) {
+    const ind = this.state.captions.findIndex(c => c.hash === new_c.hash)
+
+    if (ind !== -1 && !areSameCaptions(new_c, this.state.captions[ind])) { // to avoid useless history captures
       this.captureLastStates()
 
+      new_c = { ...new_c } // a copy
       new_c.hash = uuid()
       this.state.captions[ind] = new_c
 
@@ -202,20 +210,48 @@ class Studio extends React.Component<{}, State> {
   }
 
   captureLastStates() {
-    const caps = JSON.stringify(this.state.captions)
+    let lastHistory = this.state.capsHistory
 
-    if (capsHistory.length > MAX_HISTORY)
-      capsHistory = capsHistory.splice(0, 1)
+    // [1, 2, 3, 4] => [1, 2]
+    if (this.state.historyCursor < lastHistory.length - 1)
+      lastHistory = lastHistory.slice(0, this.state.historyCursor + 1)
 
-    capsHistory.push(caps)
+    // [1, 2, 3, 4] => [2, 3, 4]
+    else if (lastHistory.length >= MAX_HISTORY)
+      lastHistory.splice(0, 1)
+
+    lastHistory.push(JSON.stringify(this.state.captions))
+
+    this.setState({
+      capsHistory: lastHistory,
+      historyCursor: lastHistory.length - 1
+    })
   }
   undo() {
-    if (capsHistory.length > 0)
-      this.setState({
-        captions: JSON.parse(capsHistory.pop() as string),
+    // [0, 1, 2, 3] (4) |    [0]
+    //  ^<-&               ^<-&
+    if (this.state.historyCursor > -1) {
+
+      this.setState(ls => ({
+        captions: JSON.parse(ls.capsHistory[ls.historyCursor]),
+        historyCursor: ls.historyCursor - 1,
         selected_caption_i: null
-      })
+      }))
+    }
   }
+  redo() {
+    // [0, 1, 2, 3] (4)
+    //        &->^   
+    if (this.state.historyCursor + 1 < this.state.capsHistory.length) {
+
+      this.setState(ls => ({
+        captions: JSON.parse(ls.capsHistory[ls.historyCursor + 1]),
+        historyCursor: ls.historyCursor + 1,
+        selected_caption_i: null
+      }))
+    }
+  }
+
 
   saveFile() {
     fileDownload(export2srt(this.state.captions), 'subtitle.srt');
@@ -254,8 +290,16 @@ class Studio extends React.Component<{}, State> {
           />
           <CircleBtn
             iconClassName="fas fa-undo"
-            text={"undo " + capsHistory.length}
+            disabled={this.state.historyCursor === -1}
+            text={"undo " + (this.state.historyCursor + 1)}
             onClick={this.undo}
+          />
+
+          <CircleBtn
+            iconClassName="fas fa-redo" // [0, 1, 2, 3]
+            text={"redo " + ((this.state.capsHistory.length - 1) - this.state.historyCursor)}
+            disabled={!(this.state.historyCursor + 1 < this.state.capsHistory.length)}
+            onClick={this.redo}
           />
 
           <CircleBtn
@@ -295,8 +339,6 @@ class Studio extends React.Component<{}, State> {
         <CaptionEditor
           currentTime={this.state.currentTime}
           caption={this.state.selected_caption_i === null ? null : this.state.captions[this.state.selected_caption_i]}
-          // captions={this.state.captions}
-          // selectedCaption_i={this.state.selected_caption_i}
           onCaptionChanged={this.onChangeCaption}
         />
 

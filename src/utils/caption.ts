@@ -14,6 +14,10 @@ export function captionsCompare(a: Caption, b: Caption): number {
   else return 0
 }
 
+export function areSameCaptions(a: Caption, b: Caption): boolean {
+  return (a.start === b.start) && (a.end === b.end) && (a.content === b.content)
+}
+
 // save as .srt format
 export function export2srt(caps: Caption[]): string {
   return caps.map((c, i) =>
@@ -22,7 +26,8 @@ export function export2srt(caps: Caption[]): string {
 }
 
 export function parseSrt(content: string): Caption[] {
-  const matches = Array.from(content.matchAll(/([\d,:]{12}) --> ([\d,:]{12})\n(.*)(?![\d,:]{12})/g))
+  const matches = Array.from(content.matchAll(
+    /\d+\n([\d,:]{12}) --> ([\d,:]{12})\n(.+?)(?=\d+\n[\d,:]{12}|$)/gs))
 
   return matches.map(m => ({
     start: timestamp2seconds(m[1]),

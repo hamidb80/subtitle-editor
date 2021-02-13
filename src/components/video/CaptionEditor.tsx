@@ -55,7 +55,8 @@ class CaptionEditor extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if (this.props.caption?.hash !== this.state.my_caption?.hash) {
+    if (this.props.caption === null && this.state.my_caption !== null ||
+      this.props.caption !== null && (this.props.caption.hash !== this.state.my_caption?.hash)) {
 
       this.handleCaptionChange() // onblur is not triggered when you blur it by code, so this line solves the problem
 
@@ -92,19 +93,17 @@ class CaptionEditor extends React.Component<Props, State> {
         else
           cap.start = cap.end
       }
-
+      
       this.props.onCaptionChanged(cap)
     }
   }
 
   handleCaptionChange() {
     // only trigger the event when content changed
-    if (this.state.my_caption &&
-      ((this.props.caption && this.props.caption.content !== this.state.content2change) || this.props.caption === null)) {
-      // this.state.my_caption.content = this.state.content2change
+    if (this.state.my_caption) {
       const cap = this.state.my_caption
       cap.content = this.state.content2change
-      
+
       this.props.onCaptionChanged(cap)
     }
   }
