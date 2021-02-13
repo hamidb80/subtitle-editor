@@ -106,7 +106,7 @@ class Studio extends React.Component<{}, State> {
       if (i !== -1)
         this.setState({ selected_caption_i: i })
     })
-    hotkeys('ctrl+up, escape', kv => {
+    hotkeys('escape', kv => {
       kv.preventDefault()
       this.setState({ selected_caption_i: null })
     })
@@ -239,6 +239,7 @@ class Studio extends React.Component<{}, State> {
       }))
     }
   }
+  // FIXME first redo is not working
   redo() {
     // [0, 1, 2, 3] (4)
     //        &->^   
@@ -338,6 +339,7 @@ class Studio extends React.Component<{}, State> {
 
         <CaptionEditor
           currentTime={this.state.currentTime}
+          totalTime={this.state.totalTime}
           caption={this.state.selected_caption_i === null ? null : this.state.captions[this.state.selected_caption_i]}
           onCaptionChanged={this.onChangeCaption}
         />

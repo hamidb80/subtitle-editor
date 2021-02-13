@@ -12,6 +12,7 @@ import './caption-editor.sass'
 type Props = {
   currentTime: number // for stick time button
   caption: Caption | null
+  totalTime: number
   onCaptionChanged: (c: Caption) => void
 }
 type State = {
@@ -35,6 +36,7 @@ class CaptionEditor extends React.Component<Props, State> {
     this.onCaptionContentChanged = this.onCaptionContentChanged.bind(this)
     this.onCaptionTimeRangeChange = this.onCaptionTimeRangeChange.bind(this)
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
+    this.isCapInTimeRange = this.isCapInTimeRange.bind(this)
   }
   componentDidMount() {
     hotkeys('alt+left', () => {
@@ -71,6 +73,9 @@ class CaptionEditor extends React.Component<Props, State> {
     this.setState({ content2change: e.target.value })
   }
   // null value for stick time button
+  isCapInTimeRange(time: number): boolean {
+    return time >= 0 && time <= this.props.totalTime
+  }
   onCaptionTimeRangeChange(startChange: number | null = 0, endChange: number | null = 0) {
     if (this.state.my_caption !== null) {
       const cap = this.state.my_caption
@@ -78,12 +83,12 @@ class CaptionEditor extends React.Component<Props, State> {
       // controll the caption start/end time 
       if (startChange === null)
         cap.start = this.props.currentTime
-      else
+      else if (this.isCapInTimeRange(cap.start + startChange))
         cap.start += startChange
 
       if (endChange === null)
         cap.end = this.props.currentTime
-      else
+      else if (this.isCapInTimeRange(cap.end + endChange))
         cap.end += endChange
 
       // sync end & start
@@ -93,7 +98,7 @@ class CaptionEditor extends React.Component<Props, State> {
         else
           cap.start = cap.end
       }
-      
+
       this.props.onCaptionChanged(cap)
     }
   }

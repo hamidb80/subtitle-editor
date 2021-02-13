@@ -1,12 +1,9 @@
 # web based subtitle editor
 
 ## TODOS
-- [ ] add help
 - [ ] add demo
 - [ ] add some tests
 - [ ] add more details & comments about components
-- [ ] darggable captions
-- [ ] redo
 
 ## features
 * shortcuts/mouse
