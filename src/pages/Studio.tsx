@@ -1,4 +1,4 @@
-import React, {SyntheticEvent} from 'react'
+import React, { SyntheticEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
@@ -23,7 +23,7 @@ type State = {
   selected_caption_i: number | null,
 
   historyCursor: number
-  capsHistory: string[]
+  capsHistory: string[] // the last state is always is in the last index
 }
 class Studio extends React.Component<{}, State> {
 
@@ -50,7 +50,7 @@ class Studio extends React.Component<{}, State> {
     // --- bind methods ---
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
     this.onVideoError = this.onVideoError.bind(this)
-    
+
     this.addCaption = this.addCaption.bind(this)
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
@@ -65,8 +65,15 @@ class Studio extends React.Component<{}, State> {
   }
 
   componentDidMount() {
-    this.setState({ captions: appStates.subtitles.getData() })
+    // --- init states ---
+    const initCaps = appStates.subtitles.getData()
+    this.setState({
+      captions: initCaps,
+      capsHistory: [JSON.stringify(initCaps)],
+      historyCursor: 0,
+    })
 
+    // --- bind shortcuts ---
     hotkeys.filter = () => true // to make it work also in input elements
 
     hotkeys('alt+*,tab', kv => { kv.preventDefault() })
@@ -155,13 +162,11 @@ class Studio extends React.Component<{}, State> {
 
     this.setState({ currentTime: nt })
   }
-  onVideoError(e:SyntheticEvent){
+  onVideoError(e: SyntheticEvent) {
     alert('video load error')
   }
 
   addCaption() {
-    this.captureLastStates()
-
     const newCaps = this.state.captions
     newCaps.push({
       start: this.state.currentTime,
@@ -173,27 +178,23 @@ class Studio extends React.Component<{}, State> {
     this.setState({
       captions: newCaps,
       selected_caption_i: newCaps.length - 1,
-    })
+    }, this.captureLastStates)
   }
 
   onChangeCaption(new_c: Caption) {
     const ind = this.state.captions.findIndex(c => c.hash === new_c.hash)
 
     if (ind !== -1 && !areSameCaptions(new_c, this.state.captions[ind])) { // to avoid useless history captures
-      this.captureLastStates()
-
       new_c.hash = uuid()
       const caps = this.state.captions
       caps[ind] = new_c
 
-      this.setState({ captions: caps })
+      this.setState({ captions: caps }, this.captureLastStates)
     }
   }
   onCaptionDeleted() {
     if (this.state.selected_caption_i === null)
       return
-
-    this.captureLastStates()
 
     const caps = this.state.captions
     caps.splice(this.state.selected_caption_i, 1)
@@ -201,7 +202,7 @@ class Studio extends React.Component<{}, State> {
     this.setState({
       captions: caps,
       selected_caption_i: null
-    })
+    }, this.captureLastStates)
   }
   onCaptionSelected(id: number) {
     const newState = this.state.selected_caption_i === id ? null : id
@@ -216,8 +217,8 @@ class Studio extends React.Component<{}, State> {
   captureLastStates() {
     let lastHistory = this.state.capsHistory
 
-    // [1, 2, 3, 4] => [1, 2]
-    if (this.state.historyCursor < lastHistory.length - 1)
+    // [0, 1, 2, 3], c:2 => [0, 1, 2]
+    if (this.state.historyCursor !== lastHistory.length - 1)
       lastHistory = lastHistory.slice(0, this.state.historyCursor + 1)
 
     // [1, 2, 3, 4] => [2, 3, 4]
@@ -234,20 +235,19 @@ class Studio extends React.Component<{}, State> {
   undo() {
     // [0, 1, 2, 3] (4) |    [0]
     //  ^<-&               ^<-&
-    if (this.state.historyCursor > -1) {
+    if (this.state.historyCursor > 0) {
 
       this.setState(ls => ({
-        captions: JSON.parse(ls.capsHistory[ls.historyCursor]),
+        captions: JSON.parse(ls.capsHistory[ls.historyCursor - 1]),
         historyCursor: ls.historyCursor - 1,
         selected_caption_i: null
       }))
     }
   }
-  // FIXME first redo is not working
   redo() {
     // [0, 1, 2, 3] (4)
     //        &->^   
-    if (this.state.historyCursor + 1 < this.state.capsHistory.length) {
+    if (this.state.historyCursor < this.state.capsHistory.length - 1) {
 
       this.setState(ls => ({
         captions: JSON.parse(ls.capsHistory[ls.historyCursor + 1]),
@@ -296,8 +296,8 @@ class Studio extends React.Component<{}, State> {
           />
           <CircleBtn
             iconClassName="fas fa-undo"
-            disabled={this.state.historyCursor === -1}
-            text={"undo " + (this.state.historyCursor + 1)}
+            disabled={this.state.historyCursor === 0}
+            text={"undo " + (this.state.historyCursor)}
             onClick={this.undo}
           />
 
