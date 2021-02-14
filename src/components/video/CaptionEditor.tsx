@@ -78,30 +78,29 @@ class CaptionEditor extends React.Component<Props, State> {
     this.setState({ content2change: e.target.value })
   }
   onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null value for stick time button
-    if (this.state.my_caption !== null) {
-      const cap = this.state.my_caption
+    if (this.state.my_caption === null) return
+    const cap = this.state.my_caption
 
-      // controll the caption start/end time 
-      if (startChange === null)
-        cap.start = this.props.currentTime
-      else if (this.isCapInTimeRange(cap.start + startChange))
-        cap.start += startChange
+    // controll the caption start/end time 
+    if (startChange === null)
+      cap.start = this.props.currentTime
+    else if (this.isCapInTimeRange(cap.start + startChange))
+      cap.start += startChange
 
-      if (endChange === null)
-        cap.end = this.props.currentTime
-      else if (this.isCapInTimeRange(cap.end + endChange))
-        cap.end += endChange
+    if (endChange === null)
+      cap.end = this.props.currentTime
+    else if (this.isCapInTimeRange(cap.end + endChange))
+      cap.end += endChange
 
-      // sync end & start
-      if (cap.start > cap.end) {
-        if (endChange === 0)
-          cap.end = cap.start
-        else
-          cap.start = cap.end
-      }
-
-      this.props.onCaptionChanged(cap)
+    // sync end & start
+    if (cap.start > cap.end) {
+      if (endChange === 0)
+        cap.end = cap.start
+      else
+        cap.start = cap.end
     }
+
+    this.handleCaptionChange()
   }
 
   handleCaptionChange() {

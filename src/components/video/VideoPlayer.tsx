@@ -48,6 +48,7 @@ class VideoPlayer extends React.Component<Props> {
   // ----------------------- events ------------------------
 
   onDurationChanges() {
+    // emit signal
     if (this.props.onDurationChanges) {
       const du = this.videoElementRef.current?.duration || 0
       this.props.onDurationChanges(du)

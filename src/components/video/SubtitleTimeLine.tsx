@@ -36,8 +36,8 @@ class SubtitleTimeline extends React.Component<Props, State> {
 
     this.state = {
       error: false,
-      lastScale: -10,
-      scale: DEFAULT_SCALE,
+      lastScale: 0,
+      scale: 0,
     }
 
     this.canvasRef = React.createRef()
@@ -50,8 +50,8 @@ class SubtitleTimeline extends React.Component<Props, State> {
     this.zoom = this.zoom.bind(this)
     this.zoomIn = this.zoomIn.bind(this)
     this.zoomOut = this.zoomOut.bind(this)
-    this.zoomInCond = this.zoomInCond.bind(this)
-    this.zoomOutCond = this.zoomOutCond.bind(this)
+    this.isZoomInValid = this.isZoomInValid.bind(this)
+    this.isZoomOutValid = this.isZoomOutValid.bind(this)
   }
 
   // --------------------------- methods ---------------------
@@ -62,13 +62,13 @@ class SubtitleTimeline extends React.Component<Props, State> {
   zoom(value: number) {
     const new_val = this.state.scale + value
 
-    if (this.zoomInCond(new_val) && this.zoomOutCond(new_val))
+    if (this.isZoomInValid(new_val) && this.isZoomOutValid(new_val))
       this.setState({ scale: new_val })
   }
-  zoomInCond(val: number): boolean {
-    return val <= MAX_SCALE || val * this.props.duration > MAX_CANVAS_SIZE
+  isZoomInValid(val: number): boolean {
+    return (val <= MAX_SCALE) && (val * this.props.duration <= MAX_CANVAS_SIZE)
   }
-  zoomOutCond(val: number) {
+  isZoomOutValid(val: number) {
     return val > 0
   }
   zoomIn() {
@@ -109,16 +109,6 @@ class SubtitleTimeline extends React.Component<Props, State> {
 
   //  ------------------- component API ----------------------
   componentDidMount() {
-    // --- adapt timeline width with webbrowsers support
-    let currentScale = this.state.scale
-    while (currentScale * this.props.duration > MAX_CANVAS_SIZE)
-      currentScale -= SHOOT_ZOOM
-
-    if (currentScale <= 0)
-      this.setState({ error: true })
-    else
-      this.setState({ scale: currentScale })
-
     // --- register shortcuts
     hotkeys('ctrl+=', kv => {
       kv.preventDefault()
@@ -131,12 +121,22 @@ class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    // to prevent useless rerender
-    if (this.state.lastScale !== this.state.scale
-      && this.props.duration !== 0) { // that's react & it's magic behaviors :-|
+    if (this.props.duration === 0) return
 
-      this.setState({ lastScale: this.state.scale })
-      this.drawTimeRuler()
+    if (this.state.scale === 0) {
+      let currentScale = DEFAULT_SCALE
+      while (currentScale * this.props.duration > MAX_CANVAS_SIZE)
+        currentScale -= SHOOT_ZOOM
+
+      if (currentScale <= 0)
+        this.setState({ error: true, scale: -1 })
+      else
+        this.setState({ scale: currentScale })
+    }
+
+    // to prevent useless rerender
+    else if (this.state.lastScale !== this.state.scale) {
+      this.setState({ lastScale: this.state.scale }, this.drawTimeRuler)
     }
   }
 
@@ -158,7 +158,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
           <CircleBtn
             className="mb-1"
             onClick={this.zoomIn}
-            disabled={!this.zoomInCond(this.state.scale + SHOOT_ZOOM)}
+            disabled={!this.isZoomInValid(this.state.scale + SHOOT_ZOOM)}
             iconClassName="fas fa-search-plus"
           />
 
@@ -169,7 +169,7 @@ class SubtitleTimeline extends React.Component<Props, State> {
           <CircleBtn
             className="mb-1"
             onClick={this.zoomOut}
-            disabled={!this.zoomOutCond(this.state.scale - SHOOT_ZOOM)}
+            disabled={!this.isZoomOutValid(this.state.scale - SHOOT_ZOOM)}
             iconClassName="fas fa-search-minus"
           />
         </div>

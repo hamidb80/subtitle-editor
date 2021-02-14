@@ -26,6 +26,10 @@ class Help extends React.Component<{}, State> {
         keys: ['ctrl', '+/-'],
         clue: 'zoom in/out in timeline',
       },
+      {
+        keys: ['ctrl', 'shift', '+/-'],
+        clue: 'zoom in/out web page',
+      },
 
       {
         keys: ['ctrl', 'down'],

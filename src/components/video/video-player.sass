@@ -1,22 +1,19 @@
 @import '../../global'
 
 .video-player
+    max-width: 100%
     border-radius: 10px
     overflow: hidden
 
     .video-screen
         display: grid
-        width: 100%
-        height: 100%
+        max-width: 100%
 
         video, .video-state-controller
+            max-width: 100%
             grid-row: 1
             grid-column: 1
             z-index: 0
-
-        video
-            min-height: 320px
-            max-width: 100%
 
         .video-state-controller
             cursor: none

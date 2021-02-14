@@ -330,7 +330,6 @@ class Studio extends React.Component<{}, State> {
             disabled={this.state.captions.length === 0}
             onClick={this.clearCaptions}
           />
-
         </div>
 
         <SubtitleTimeline
