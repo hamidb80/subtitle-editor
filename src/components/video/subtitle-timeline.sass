@@ -66,30 +66,30 @@
                     will-change: transform
                     border-left: 2px dashed $red
 
-        .caption-item
-            display: inline-block
-            position: absolute
-            height: 32px
-            padding: 2px 6px
-            color: $white
-            text-shadow: 1px 1px $black
-            border-radius: 4px
-            opacity: 0.8
-            overflow: hidden
-            cursor: pointer
-            transition-property: opacity, background-color, color
-            transition-duration : 0.2s
-            user-select: none
-
-            &:hover, &.selected
-                opacity: 1
-
         .captions-side
             background-color: $gray-100
-
+        
             .caption-item
+                display: inline-block
+                position: absolute
+                height: 32px
+                padding: 6px 0
+                color: $white
+                text-shadow: 1px 1px $black
                 background-color: $black
                 border-left: 8px solid $orange
+                border-radius: 4px
+                opacity: 0.8
+                overflow: hidden
+                cursor: pointer
+                transition-property: opacity, background-color, color
+                transition-duration : 0.2s
+                user-select: none
+
+                span
+                    margin-left: 2px
+                    display: ruby-text
 
                 &:hover, &.selected
+                    opacity: 1
                     background-color: $orange

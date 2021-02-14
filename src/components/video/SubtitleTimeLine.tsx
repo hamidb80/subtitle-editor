@@ -218,7 +218,7 @@ function captionItem(c: Caption, index: number, selected_i: null | number, click
         width: `${width * scale}px`
       }}>
 
-      <span> {c.content} </span>
+      <span>{c.content}</span>
     </div>
   )
 }

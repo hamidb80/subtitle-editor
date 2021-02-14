@@ -210,8 +210,10 @@ class Studio extends React.Component<{}, State> {
     this.setState({ selected_caption_i: newState })
   }
   clearCaptions() {
-    this.captureLastStates()
-    this.setState({ captions: [], selected_caption_i: null })
+    this.setState({
+      captions: [],
+      selected_caption_i: null
+    }, this.captureLastStates)
   }
 
   captureLastStates() {
