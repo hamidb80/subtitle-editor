@@ -70,6 +70,7 @@ class Help extends React.Component<{}, State> {
     return (<>
       <h2 className="page-title">Help</h2>
       <div className="wrapper">
+        
         {this.state.shortcuts.map(sh => (
           <div className="shortcut d-flex justify-content-between">
             <span className="keys">

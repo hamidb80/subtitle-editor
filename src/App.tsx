@@ -1,7 +1,7 @@
 import React from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
-import { Intro, Studio , Help} from "./pages"
+import { Intro, Studio, Help } from "./pages"
 
 import "./global.sass"
 

@@ -2,6 +2,7 @@ import React, { ChangeEvent, FocusEvent } from 'react'
 import { second2timestamp, timestamp2seconds } from "../../utils/timestamp"
 
 import { CircleBtn } from "../form"
+import { SHOOT_SUBTITLE_TIME_MAJOR, SHOOT_SUBTITLE_TIME_MINOR } from "../../utils/consts";
 
 import './time-controll.sass'
 
@@ -82,13 +83,13 @@ class TimeControll extends React.Component<Props, State> {
           className="time-control-btn minus-time"
           disabled={disabled}
           iconClassName="fas fa-minus"
-          onClick={() => this.changeHandler(-1)}
+          onClick={() => this.changeHandler(-SHOOT_SUBTITLE_TIME_MAJOR)}
         />
 
         <CircleBtn
           className="time-control-btn minus-time little"
           disabled={disabled}
-          onClick={() => this.changeHandler(-0.1)}
+          onClick={() => this.changeHandler(-SHOOT_SUBTITLE_TIME_MINOR)}
           iconClassName="fas fa-minus"
         />
 
@@ -98,14 +99,14 @@ class TimeControll extends React.Component<Props, State> {
           className="time-control-btn add-time little"
           disabled={disabled}
 
-          onClick={() => this.changeHandler(+0.1)}
+          onClick={() => this.changeHandler(+SHOOT_SUBTITLE_TIME_MINOR)}
           iconClassName="fas fa-plus"
         />
 
         <CircleBtn
           className="time-control-btn add-time"
           disabled={disabled}
-          onClick={() => this.changeHandler(+1)}
+          onClick={() => this.changeHandler(+SHOOT_SUBTITLE_TIME_MAJOR)}
           iconClassName="fas fa-plus"
         />
 

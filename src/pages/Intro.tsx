@@ -1,19 +1,27 @@
 import React from 'react'
-import { Link } from "react-router-dom"
+import { Link, Redirect } from "react-router-dom"
 
 import FileInput from "../components/form/FileInput"
 import appStates from "../utils/states"
 import { parseSrt } from "../utils/caption"
 
-class Intro extends React.Component {
-  state: { subtitleUrl: string }
-
+type State = {
+  subtitleUrl: string
+  videoUrl: string
+  canPass: boolean
+}
+class Intro extends React.Component<{}, State> {
   constructor(props: any) {
     super(props)
-    this.state = { subtitleUrl: '' }
+    this.state = {
+      subtitleUrl: '',
+      videoUrl: '',
+      canPass: false,
+    }
 
     this.handler = this.handler.bind(this)
     this.loadCaptions = this.loadCaptions.bind(this)
+    this.checkValidation = this.checkValidation.bind(this)
   }
 
   async loadCaptions() {
@@ -23,21 +31,29 @@ class Intro extends React.Component {
     const response = await fetch(this.state.subtitleUrl),
       data = await response.text()
 
-    // TODO check for error or emptiness
     appStates.subtitles.setData(parseSrt(data))
   }
 
-  // TODO check something is selected of not
   handler(f: File, fileType: "video" | "subtitle") {
     const blob = URL.createObjectURL(f)
 
-    if (fileType === 'video')
+    if (fileType === 'video') {
       appStates.videoUrl.setData(blob)
+      this.setState({ videoUrl: blob }, this.loadCaptions)
+    }
     else
       this.setState({ subtitleUrl: blob }, this.loadCaptions)
   }
 
+  checkValidation() {
+    if (this.state.videoUrl)
+      this.setState({ canPass: true })
+  }
+
   render() {
+    if (this.state.canPass)
+      return <Redirect to="/studio" />
+
     return (<>
       <h2 className="page-title" >Intro</h2>
       <div className="wrapper">
@@ -52,7 +68,7 @@ class Intro extends React.Component {
 
         <div className="alert alert-info">
           you can check supported video formats
-        <a href="https://en.wikipedia.org/wiki/HTML5_video" target="blank"> here </a>
+          <a href="https://en.wikipedia.org/wiki/HTML5_video" target="blank"> here </a>
         </div>
 
         <div className="mt-3">
@@ -64,11 +80,9 @@ class Intro extends React.Component {
         </div>
 
         <div className="center">
-          <Link to="/studio">
-            <button className="btn btn-success font-weight-bold">
-              go to studio!
-            </button>
-          </Link>
+          <button className="btn btn-success font-weight-bold" onClick={this.checkValidation}>
+            go to studio!
+          </button>
         </div>
 
       </div></>)

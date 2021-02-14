@@ -8,6 +8,7 @@ const videoControllHiddingDelay = 2
 type Props = {
   videoUrl: string
   onTimeUpdate?: (timePerSecond: number) => void
+  onError?: (e: SyntheticEvent) => void
   onDurationChanges: (duration: number) => void
 }
 
@@ -34,6 +35,7 @@ class VideoPlayer extends React.Component<Props> {
     // events
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
     this.onMouseMove = this.onMouseMove.bind(this)
+    this.onError = this.onError.bind(this)
 
     // actions
     this.setPlay = this.setPlay.bind(this)
@@ -65,6 +67,11 @@ class VideoPlayer extends React.Component<Props> {
 
     this.setState({ showVideoControll: true })
     this.timer = +setTimeout(this.disableVideoControllers, videoControllHiddingDelay * 1000)
+  }
+
+  onError(e: SyntheticEvent) {
+    if (this.props.onError)
+      this.props.onError(e)
   }
 
   // // ----------------------- functions ------------------------
@@ -123,6 +130,7 @@ class VideoPlayer extends React.Component<Props> {
             autoPlay={false}
             loop={false}
             onDurationChange={this.onDurationChanges}
+            onError={e => this.onError(e)}
           ></video>
 
           <div className={"video-state-controller"}>

@@ -1,4 +1,4 @@
-class WindowStates<T> {
+class WindowStates<T> { // global state: just a data wrapper
   data: T
   constructor(given_data: T) {
     this.data = given_data

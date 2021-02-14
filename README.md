@@ -3,7 +3,7 @@
 ## TODOS
 - [ ] add demo
 - [ ] add some tests
-- [ ] add more details & comments about components
+- [ ] fix undo/redo algorithm
 
 ## features
 * shortcuts/mouse

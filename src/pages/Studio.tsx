@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {SyntheticEvent} from 'react'
 import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
@@ -49,7 +49,8 @@ class Studio extends React.Component<{}, State> {
 
     // --- bind methods ---
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
-
+    this.onVideoError = this.onVideoError.bind(this)
+    
     this.addCaption = this.addCaption.bind(this)
     this.onChangeCaption = this.onChangeCaption.bind(this)
     this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
@@ -154,6 +155,9 @@ class Studio extends React.Component<{}, State> {
 
     this.setState({ currentTime: nt })
   }
+  onVideoError(e:SyntheticEvent){
+    alert('video load error')
+  }
 
   addCaption() {
     this.captureLastStates()
@@ -178,11 +182,11 @@ class Studio extends React.Component<{}, State> {
     if (ind !== -1 && !areSameCaptions(new_c, this.state.captions[ind])) { // to avoid useless history captures
       this.captureLastStates()
 
-      new_c = { ...new_c } // a copy
       new_c.hash = uuid()
-      this.state.captions[ind] = new_c
+      const caps = this.state.captions
+      caps[ind] = new_c
 
-      this.setState(({ captions: this.state.captions }))
+      this.setState({ captions: caps })
     }
   }
   onCaptionDeleted() {
@@ -268,6 +272,7 @@ class Studio extends React.Component<{}, State> {
             ref={this.VideoPlayerRef}
             videoUrl={this.state.videoUrl}
             onTimeUpdate={this.onTimeUpdate}
+            onError={this.onVideoError}
             onDurationChanges={du => this.setState({ totalTime: du })}
           />
         </div>

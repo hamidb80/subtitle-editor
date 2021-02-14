@@ -9,8 +9,6 @@ type Props = {
   totalTime: number // per seconds
   currentTime: number
   onSelectNewTime?: (newTime: number) => void
-
-  fullScreen?: boolean
 }
 
 class SimpleTimeline extends React.Component<Props> {
@@ -46,7 +44,7 @@ class SimpleTimeline extends React.Component<Props> {
       duration = second2timestamp(this.props.totalTime, "minute")
 
     return (
-      <div className={"timeline " + this.props.className + (this.props.fullScreen ? ' fullscreen' : '')}
+      <div className={"timeline " + this.props.className}
         onClick={this.handleClick}>
         
         <div className="progress">

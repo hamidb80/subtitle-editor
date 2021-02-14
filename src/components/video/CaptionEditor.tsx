@@ -4,22 +4,22 @@ import hotkeys from 'hotkeys-js'
 import { TimeControll } from "."
 import { Caption } from "../../utils/caption"
 
-import { SHOOT_TIME_MINOR } from "../../utils/consts"
+import { SHOOT_SUBTITLE_TIME_MAJOR } from "../../utils/consts"
 
 import './caption-editor.sass'
 
 
 type Props = {
   currentTime: number // for stick time button
+  totalTime: number // video duration
+
   caption: Caption | null
-  totalTime: number
   onCaptionChanged: (c: Caption) => void
 }
 type State = {
-  my_caption: Caption | null,
-  content2change: string
+  my_caption: Caption | null, // a copy of props.caption to edit
+  content2change: string // 
 }
-
 class CaptionEditor extends React.Component<Props, State> {
   inputRef: React.RefObject<HTMLInputElement>
 
@@ -30,29 +30,29 @@ class CaptionEditor extends React.Component<Props, State> {
       my_caption: null,
       content2change: ""
     }
-
     this.inputRef = React.createRef()
 
+    // --- binding methods ---
     this.onCaptionContentChanged = this.onCaptionContentChanged.bind(this)
-    this.onCaptionTimeRangeChange = this.onCaptionTimeRangeChange.bind(this)
+    this.onCaptionTimeRangeChanged = this.onCaptionTimeRangeChanged.bind(this)
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
     this.isCapInTimeRange = this.isCapInTimeRange.bind(this)
   }
+
   componentDidMount() {
     hotkeys('alt+left', () => {
-      this.onCaptionTimeRangeChange(-SHOOT_TIME_MINOR, 0)
+      this.onCaptionTimeRangeChanged(-SHOOT_SUBTITLE_TIME_MAJOR, 0)
     })
     hotkeys('alt+right', () => {
-      this.onCaptionTimeRangeChange(+SHOOT_TIME_MINOR, 0)
+      this.onCaptionTimeRangeChanged(+SHOOT_SUBTITLE_TIME_MAJOR, 0)
     })
-
     hotkeys('tab+left', kv => {
       kv.preventDefault()
-      this.onCaptionTimeRangeChange(0, -SHOOT_TIME_MINOR)
+      this.onCaptionTimeRangeChanged(0, -SHOOT_SUBTITLE_TIME_MAJOR)
     })
     hotkeys('tab+right', kv => {
       kv.preventDefault()
-      this.onCaptionTimeRangeChange(0, +SHOOT_TIME_MINOR)
+      this.onCaptionTimeRangeChanged(0, +SHOOT_SUBTITLE_TIME_MAJOR)
     })
   }
 
@@ -69,14 +69,15 @@ class CaptionEditor extends React.Component<Props, State> {
     }
   }
 
-  onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
-    this.setState({ content2change: e.target.value })
-  }
-  // null value for stick time button
+  
   isCapInTimeRange(time: number): boolean {
     return time >= 0 && time <= this.props.totalTime
   }
-  onCaptionTimeRangeChange(startChange: number | null = 0, endChange: number | null = 0) {
+  
+  onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
+    this.setState({ content2change: e.target.value })
+  }
+  onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null value for stick time button
     if (this.state.my_caption !== null) {
       const cap = this.state.my_caption
 
@@ -104,13 +105,14 @@ class CaptionEditor extends React.Component<Props, State> {
   }
 
   handleCaptionChange() {
-    // only trigger the event when content changed
-    if (this.state.my_caption) {
-      const cap = this.state.my_caption
-      cap.content = this.state.content2change
+    if (this.state.my_caption === null)
+      return
 
-      this.props.onCaptionChanged(cap)
+    const new_cap = {
+      ...this.state.my_caption,
+      content: this.state.content2change
     }
+    this.props.onCaptionChanged(new_cap)
   }
 
   render() {
@@ -123,7 +125,7 @@ class CaptionEditor extends React.Component<Props, State> {
         {cap ?
           <TimeControll
             time={cap.start}
-            onChange={changeValue => { this.onCaptionTimeRangeChange(changeValue, 0) }}
+            onChange={changeValue => { this.onCaptionTimeRangeChanged(changeValue, 0) }}
           /> :
           <TimeControll time={0} />
         }
@@ -139,7 +141,7 @@ class CaptionEditor extends React.Component<Props, State> {
         {cap ?
           <TimeControll
             time={cap.end}
-            onChange={changeValue => { this.onCaptionTimeRangeChange(0, changeValue) }}
+            onChange={changeValue => { this.onCaptionTimeRangeChanged(0, changeValue) }}
           /> :
           <TimeControll time={0} />
         }
