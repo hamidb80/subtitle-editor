@@ -1,5 +1,9 @@
 # web based subtitle editor
 
+
+## demo
+you can see demo  [here](https://hamidb80.github.io/subtitle-edtior/)
+
 ## features
 * shortcuts/mouse
 * nice ux/ui
