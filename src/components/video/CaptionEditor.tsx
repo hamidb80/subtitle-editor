@@ -20,7 +20,7 @@ type State = {
   my_caption: Caption | null, // a copy of props.caption to edit
   content2change: string // 
 }
-class CaptionEditor extends React.Component<Props, State> {
+export default class CaptionEditor extends React.Component<Props, State> {
   inputRef: React.RefObject<HTMLInputElement>
 
   constructor(props: any) {
@@ -43,6 +43,14 @@ class CaptionEditor extends React.Component<Props, State> {
     hotkeys('alt+left', () => {
       this.onCaptionTimeRangeChanged(-SHOOT_SUBTITLE_TIME_MAJOR, 0)
     })
+
+    hotkeys('home', kv => {
+      this.onCaptionTimeRangeChanged(null, 0)
+    })
+    hotkeys('end', kv => {
+      this.onCaptionTimeRangeChanged(0, null)
+    })
+
     hotkeys('alt+right', () => {
       this.onCaptionTimeRangeChanged(+SHOOT_SUBTITLE_TIME_MAJOR, 0)
     })
@@ -131,7 +139,9 @@ class CaptionEditor extends React.Component<Props, State> {
 
         <div>
           <input type="text" ref={this.inputRef}
-            className={"form-control caption-editor " + (cap ? '' : 'invisible')}
+            className={"form-control caption-editor " + (cap ? '' : 'invisible') +
+            ((/^\w+/).test(this.state.content2change) ? "ltr" : "rtl")
+           }
             value={this.state.content2change}
             onChange={this.onCaptionContentChanged}
             onBlur={this.handleCaptionChange} />
@@ -148,5 +158,3 @@ class CaptionEditor extends React.Component<Props, State> {
     )
   }
 }
-
-export default CaptionEditor

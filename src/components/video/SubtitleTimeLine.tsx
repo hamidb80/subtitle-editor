@@ -27,8 +27,7 @@ type State = {
   lastScale: number
   scale: number
 }
-
-class SubtitleTimeline extends React.Component<Props, State> {
+export default class SubtitleTimeline extends React.Component<Props, State> {
   canvasRef: React.RefObject<HTMLCanvasElement>
 
   constructor(props: any) {
@@ -249,5 +248,3 @@ class UserCursorElem extends React.Component<USPROPS> {
     )
   }
 }
-
-export default SubtitleTimeline

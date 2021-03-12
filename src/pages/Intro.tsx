@@ -10,7 +10,7 @@ type State = {
   videoUrl: string
   canPass: boolean
 }
-class Intro extends React.Component<{}, State> {
+export default class Intro extends React.Component<{}, State> {
   constructor(props: any) {
     super(props)
     this.state = {
@@ -88,5 +88,3 @@ class Intro extends React.Component<{}, State> {
       </div></>)
   }
 }
-
-export default Intro

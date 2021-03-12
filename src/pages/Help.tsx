@@ -7,7 +7,7 @@ type State = {
     clue: string,
   }[]
 }
-class Help extends React.Component<{}, State> {
+export default class Help extends React.Component<{}, State> {
   state = {
     shortcuts: [
       {
@@ -47,6 +47,10 @@ class Help extends React.Component<{}, State> {
       {
         keys: ['alt', 'left/right'],
         clue: 'shoot start of selected caption forward/backward',
+      },
+      {
+        keys: ['home/end'],
+        clue: 'shoot start/end of selected caption to the current time',
       },
       {
         keys: ['ctrl', 'enter'],
@@ -91,5 +95,3 @@ class Help extends React.Component<{}, State> {
       </div></>)
   }
 }
-
-export default Help

@@ -14,8 +14,7 @@ type State = {
   isEditing: boolean
   timeEditing: string
 }
-
-class TimeControll extends React.Component<Props, State> {
+export default class TimeControll extends React.Component<Props, State> {
   constructor(props: any) {
     super(props)
 
@@ -120,5 +119,3 @@ class TimeControll extends React.Component<Props, State> {
     )
   }
 }
-
-export default TimeControll

@@ -6,8 +6,7 @@ type Props = {
   currentTime: number
   captions: Caption[]
 }
-
-class CaptionView extends React.Component<Props> {
+export default class CaptionView extends React.Component<Props> {
   constructor(props: any) {
     super(props)
     
@@ -37,4 +36,3 @@ class CaptionView extends React.Component<Props> {
   }
 }
 
-export default CaptionView

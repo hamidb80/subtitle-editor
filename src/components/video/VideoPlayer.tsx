@@ -11,8 +11,7 @@ type Props = {
   onError?: (e: SyntheticEvent) => void
   onDurationChanges: (duration: number) => void
 }
-
-class VideoPlayer extends React.Component<Props> {
+export default class VideoPlayer extends React.Component<Props> {
   videoElementRef: React.RefObject<HTMLVideoElement>
   timer: number = 0 // for settimeout
 
@@ -152,4 +151,3 @@ class VideoPlayer extends React.Component<Props> {
     )
   }
 }
-export default VideoPlayer

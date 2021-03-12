@@ -3,15 +3,25 @@ import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
-import { Caption, export2srt, areSameCaptions } from "../utils/caption"
+import { Caption, export2srt, areSameCaptions, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn } from "../components/form"
 
 import "./studio.sass"
-
 const fileDownload = require('js-file-download')
+
+enum ActionTypes {
+  Delete = "Delete",
+  Create = "Create",
+  Change = "Change"
+}
+type ActionHistory = {
+  type: ActionTypes
+  from?: Caption
+  to?: Caption
+}
 
 type State = {
   videoUrl: string
@@ -23,9 +33,9 @@ type State = {
   selected_caption_i: number | null,
 
   historyCursor: number
-  capsHistory: string[] // the last state is always is in the last index
+  capsHistory: ActionHistory[] // the last state is always is in the last index
 }
-class Studio extends React.Component<{}, State> {
+export default class Studio extends React.Component<{}, State> {
 
   VideoPlayerRef: React.RefObject<VideoPlayer>
 
@@ -52,31 +62,28 @@ class Studio extends React.Component<{}, State> {
     this.onVideoError = this.onVideoError.bind(this)
 
     this.addCaption = this.addCaption.bind(this)
-    this.onChangeCaption = this.onChangeCaption.bind(this)
-    this.onCaptionDeleted = this.onCaptionDeleted.bind(this)
-    this.onCaptionSelected = this.onCaptionSelected.bind(this)
-    this.clearCaptions = this.clearCaptions.bind(this)
+    this.changeCaption = this.changeCaption.bind(this)
+    this.DeleteCaption = this.DeleteCaption.bind(this)
+    this.captionSelectionToggle = this.captionSelectionToggle.bind(this)
 
-    this.captureLastStates = this.captureLastStates.bind(this)
+    this.historyManager = this.historyManager.bind(this)
     this.undo = this.undo.bind(this)
     this.redo = this.redo.bind(this)
 
     this.saveFile = this.saveFile.bind(this)
   }
 
+  // ------------- component API -----------------
+
   componentDidMount() {
     // --- init states ---
     const initCaps = appStates.subtitles.getData()
-    this.setState({
-      captions: initCaps,
-      capsHistory: [JSON.stringify(initCaps)],
-      historyCursor: 0,
-    })
+    this.setState({ captions: initCaps, })
 
     // --- bind shortcuts ---
     hotkeys.filter = () => true // to make it work also in input elements
 
-    hotkeys('alt+*,tab', kv => { kv.preventDefault() })
+    hotkeys('alt+*, tab, shift+tab', kv => kv.preventDefault())
 
     hotkeys('ctrl+shift+left', kv => {
       if (this.state.selected_caption_i === null) {
@@ -91,19 +98,15 @@ class Studio extends React.Component<{}, State> {
       }
     })
     hotkeys('ctrl+left', kv => {
-      if (this.state.selected_caption_i === null) {
-        kv.preventDefault()
-        this.VideoPlayerRef.current?.shootTime(-SHOOT_TIME_MINOR)
-      }
+      kv.preventDefault()
+      this.VideoPlayerRef.current?.shootTime(-SHOOT_TIME_MINOR)
     })
     hotkeys('ctrl+right', kv => {
-      if (this.state.selected_caption_i === null) {
-        kv.preventDefault()
-        this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MINOR)
-      }
+      kv.preventDefault()
+      this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MINOR)
     })
 
-    hotkeys('ctrl+enter', this.addCaption)
+    hotkeys('ctrl+enter', () => this.addCaption())
 
     hotkeys('ctrl+down', kv => {
       kv.preventDefault()
@@ -128,7 +131,7 @@ class Studio extends React.Component<{}, State> {
       this.VideoPlayerRef.current?.togglePlay()
     })
 
-    hotkeys('ctrl+delete', this.onCaptionDeleted)
+    hotkeys('ctrl+delete', () => this.DeleteCaption())
 
     hotkeys('ctrl+z', this.undo)
     hotkeys('ctrl+y', this.redo)
@@ -140,6 +143,8 @@ class Studio extends React.Component<{}, State> {
   componentWillUnmount() {
     hotkeys.unbind()
   }
+
+  // ----------- video player events -------------------
 
   onTimeUpdate(nt: number) { // nt: new time
     const sci = this.state.selected_caption_i
@@ -162,105 +167,180 @@ class Studio extends React.Component<{}, State> {
 
     this.setState({ currentTime: nt })
   }
+
   onVideoError(e: SyntheticEvent) {
     alert('video load error')
   }
 
-  addCaption() {
-    const newCaps = this.state.captions
-    newCaps.push({
-      start: this.state.currentTime,
-      end: this.state.currentTime + 1,
-      content: "New Caption",
-      hash: uuid()
-    })
+  // ----------------- functionalities --------------------
+
+  addCaption(cap?: Caption) {
+    const
+      capList = this.state.captions,
+      history = this.state.capsHistory,
+      t = this.state.currentTime,
+
+      newCap = cap ? cap : {
+        start: t,
+        end: t + 1,
+        content: "New Caption",
+        hash: uuid(),
+      }
+
+    capList.push(newCap)
+
+    if (cap === undefined) // if it wasn't from undo/redo
+      history.push({
+        type: ActionTypes.Create,
+        to: newCap
+      })
 
     this.setState({
-      captions: newCaps,
-      selected_caption_i: newCaps.length - 1,
-    }, this.captureLastStates)
+      captions: capList,
+      selected_caption_i: capList.length - 1,
+
+      capsHistory: history,
+    }, () => this.historyManager(cap !== undefined))
   }
 
-  onChangeCaption(new_c: Caption) {
+  changeCaption(new_c: Caption) {
     const ind = this.state.captions.findIndex(c => c.hash === new_c.hash)
 
     if (ind !== -1 && !areSameCaptions(new_c, this.state.captions[ind])) { // to avoid useless history captures
-      new_c.hash = uuid()
-      const caps = this.state.captions
-      caps[ind] = new_c
+      const
+        my_new_c = { ...new_c },
+        caps = this.state.captions,
+        history = this.state.capsHistory
 
-      this.setState({ captions: caps }, this.captureLastStates)
+      my_new_c.hash = uuid()
+      history.push({
+        type: ActionTypes.Change,
+        from: new_c,
+        to: my_new_c
+      })
+
+      caps[ind] = my_new_c
+      this.setState({
+        captions: caps,
+        capsHistory: history
+      })
     }
   }
-  onCaptionDeleted() {
-    if (this.state.selected_caption_i === null)
-      return
 
-    const caps = this.state.captions
-    caps.splice(this.state.selected_caption_i, 1)
+  DeleteCaption(cap?: Caption) {
+    const
+      caps = this.state.captions,
+      history = this.state.capsHistory,
+
+      selected_caption_index = cap ?
+        caps.findIndex(c => c.hash === cap.hash) :
+        this.state.selected_caption_i
+
+    if (selected_caption_index === null) return
+
+    if (cap === undefined) // if it wasn't from undo/redo
+      history.push({
+        type: ActionTypes.Delete,
+        from: { ...caps[selected_caption_index] }
+      })
+
+    caps.splice(selected_caption_index, 1) // remove it from captions
 
     this.setState({
       captions: caps,
-      selected_caption_i: null
-    }, this.captureLastStates)
+      selected_caption_i: null,
+
+      capsHistory: history,
+    }, () => this.historyManager(cap !== undefined))
   }
-  onCaptionSelected(id: number) {
+
+  captionSelectionToggle(id: number) {
     const newState = this.state.selected_caption_i === id ? null : id
 
     this.setState({ selected_caption_i: newState })
   }
-  clearCaptions() {
-    this.setState({
-      captions: [],
-      selected_caption_i: null
-    }, this.captureLastStates)
-  }
 
-  captureLastStates() {
+  historyManager(is_called_by_undo_redo: boolean) {
+    const hc = this.state.historyCursor
     let lastHistory = this.state.capsHistory
 
+    if (is_called_by_undo_redo)
+      return
+
     // [0, 1, 2, 3], c:2 => [0, 1, 2]
-    if (this.state.historyCursor !== lastHistory.length - 1)
-      lastHistory = lastHistory.slice(0, this.state.historyCursor + 1)
+    else if (hc + 1 !== lastHistory.length - 1)
+      lastHistory = lastHistory.slice(0, hc + 2)
 
     // [1, 2, 3, 4] => [2, 3, 4]
     else if (lastHistory.length >= MAX_HISTORY)
       lastHistory.splice(0, 1)
-
-    lastHistory.push(JSON.stringify(this.state.captions))
 
     this.setState({
       capsHistory: lastHistory,
       historyCursor: lastHistory.length - 1
     })
   }
+
   undo() {
+    // [] -1
+    // [{...}] 0
+    // [{...}, {...}] 1
+
     // [0, 1, 2, 3] (4) |    [0]
     //  ^<-&               ^<-&
-    if (this.state.historyCursor > 0) {
+    const hc = this.state.historyCursor
+    if (hc >= 0) {
+      let
+        history = this.state.capsHistory,
+        lastAction = history[hc]
 
-      this.setState(ls => ({
-        captions: JSON.parse(ls.capsHistory[ls.historyCursor - 1]),
-        historyCursor: ls.historyCursor - 1,
+      if (lastAction.type === ActionTypes.Create)
+        this.DeleteCaption(lastAction.to)
+
+      else if (lastAction.type === ActionTypes.Delete)
+        this.addCaption(lastAction.from)
+
+
+      else {  // if (lastAction.type == ActionTypes.Change)
+        // this.changeCaption()
+      }
+
+      this.setState({
+        historyCursor: hc - 1,
         selected_caption_i: null
-      }))
+      })
     }
   }
   redo() {
-    // [0, 1, 2, 3] (4)
+    // [0, 1, 2, 3]: 4 
     //        &->^   
-    if (this.state.historyCursor < this.state.capsHistory.length - 1) {
 
-      this.setState(ls => ({
-        captions: JSON.parse(ls.capsHistory[ls.historyCursor + 1]),
-        historyCursor: ls.historyCursor + 1,
+    const hc = this.state.historyCursor
+    if (hc + 1 < this.state.capsHistory.length) {
+
+      let lastAction = this.state.capsHistory[hc + 1]
+      if (lastAction === undefined) return
+
+      if (lastAction.type === ActionTypes.Create)
+        this.addCaption(lastAction.to)
+
+      else if (lastAction.type === ActionTypes.Delete)
+        this.DeleteCaption(lastAction.from)
+
+      else // if (lastAction.type == ActionTypes.Change)
+      {
+        // this.changeCaption()
+      }
+
+      this.setState({
+        historyCursor: hc + 1,
         selected_caption_i: null
-      }))
+      })
     }
   }
 
-
   saveFile() {
+    this.state.captions.sort(captionsCompare)
     fileDownload(export2srt(this.state.captions), 'subtitle.srt');
   }
 
@@ -294,19 +374,19 @@ class Studio extends React.Component<{}, State> {
           <CircleBtn
             iconClassName="fas fa-plus"
             text="add caption"
-            onClick={this.addCaption}
+            onClick={() => this.addCaption()}
           />
           <CircleBtn
             iconClassName="fas fa-undo"
-            disabled={this.state.historyCursor === 0}
-            text={"undo " + (this.state.historyCursor)}
+            disabled={this.state.historyCursor === -1}
+            text={"undo " + (this.state.historyCursor + 1)}
             onClick={this.undo}
           />
 
           <CircleBtn
             iconClassName="fas fa-redo" // [0, 1, 2, 3]
             text={"redo " + ((this.state.capsHistory.length - 1) - this.state.historyCursor)}
-            disabled={!(this.state.historyCursor + 1 < this.state.capsHistory.length)}
+            disabled={this.state.historyCursor >= this.state.capsHistory.length - 1}
             onClick={this.redo}
           />
 
@@ -321,15 +401,9 @@ class Studio extends React.Component<{}, State> {
             iconClassName="fas fa-trash"
             disabled={this.state.selected_caption_i === null}
             text="delete"
-            onClick={this.onCaptionDeleted}
+            onClick={() => this.DeleteCaption()}
           />
 
-          <CircleBtn
-            iconClassName="fas fa-broom"
-            text="clear timeline"
-            disabled={this.state.captions.length === 0}
-            onClick={this.clearCaptions}
-          />
         </div>
 
         <SubtitleTimeline
@@ -339,7 +413,7 @@ class Studio extends React.Component<{}, State> {
           onSelectNewTime={nt => this.VideoPlayerRef.current?.setTime(nt)}
 
           captions={this.state.captions}
-          onCaptionSelected={this.onCaptionSelected}
+          onCaptionSelected={this.captionSelectionToggle}
           selectedCaption_i={this.state.selected_caption_i}
         />
 
@@ -347,7 +421,7 @@ class Studio extends React.Component<{}, State> {
           currentTime={this.state.currentTime}
           totalTime={this.state.totalTime}
           caption={this.state.selected_caption_i === null ? null : this.state.captions[this.state.selected_caption_i]}
-          onCaptionChanged={this.onChangeCaption}
+          onCaptionChanged={this.changeCaption}
         />
 
       </div>
@@ -360,5 +434,3 @@ class Studio extends React.Component<{}, State> {
     </>)
   }
 }
-
-export default Studio

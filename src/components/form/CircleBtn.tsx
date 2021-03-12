@@ -10,7 +10,7 @@ type Props = {
   onClick: (me: MouseEvent) => void
 }
 
-class CircleBtn extends React.Component<Props> {
+export default class CircleBtn extends React.Component<Props> {
 
   render() {
     return (<>
@@ -30,4 +30,3 @@ class CircleBtn extends React.Component<Props> {
   }
 }
 
-export default CircleBtn

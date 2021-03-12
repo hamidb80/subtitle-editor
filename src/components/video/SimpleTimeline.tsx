@@ -10,8 +10,7 @@ type Props = {
   currentTime: number
   onSelectNewTime?: (newTime: number) => void
 }
-
-class SimpleTimeline extends React.Component<Props> {
+export default class SimpleTimeline extends React.Component<Props> {
   constructor(props: any) {
     super(props)
 
@@ -64,5 +63,3 @@ class SimpleTimeline extends React.Component<Props> {
     )
   }
 }
-
-export default SimpleTimeline
