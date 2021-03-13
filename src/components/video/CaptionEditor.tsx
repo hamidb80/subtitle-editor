@@ -128,6 +128,9 @@ export default class CaptionEditor extends React.Component<Props, State> {
     const cap = this.props.caption // myabe it's not available [for eg it can be removed]
     if (cap)
       this.inputRef.current?.focus()
+    // NOTE: causes prolem due to undesired blur event
+    // else 
+    //   this.inputRef.current?.blur()
 
     return (
       <div className="caption-editor-wrapper">
@@ -142,8 +145,8 @@ export default class CaptionEditor extends React.Component<Props, State> {
         <div>
           <input type="text" ref={this.inputRef}
             className={"form-control caption-editor " + (cap ? '' : 'invisible') +
-            ((/^\w+/).test(this.state.content2change) ? "ltr" : "rtl")
-           }
+              ((/^\w+/).test(this.state.content2change) ? "ltr" : "rtl")
+            }
             value={this.state.content2change}
             onChange={this.onCaptionContentChanged}
             onBlur={this.handleCaptionChange} />

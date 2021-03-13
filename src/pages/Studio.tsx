@@ -175,10 +175,7 @@ export default class Studio extends React.Component<{}, State> {
     const capList = this.state.captions
     capList.push(newCap)
 
-    this.setState({
-      captions: capList,
-      selected_caption_i: capList.length - 1
-    })
+    this.setState({ captions: capList, })
   }
 
   addCaption() {
@@ -201,7 +198,10 @@ export default class Studio extends React.Component<{}, State> {
     })
 
     this.setState(
-      { capsHistory: history },
+      {
+        capsHistory: history,
+        selected_caption_i: this.state.captions.length - 1
+      },
       this.updateHistoryCursor)
   }
 
@@ -209,6 +209,9 @@ export default class Studio extends React.Component<{}, State> {
     const
       caps = this.state.captions,
       fromCapIndex = caps.findIndex(c => c.hash === fromCap.hash)
+
+    // don't remove this - even I don't know why
+    if (fromCapIndex === -1) return false
 
     if (!areSameCaptions(caps[fromCapIndex], toCap)) { // to avoid useless history captures
       caps[fromCapIndex] = toCap
@@ -278,7 +281,7 @@ export default class Studio extends React.Component<{}, State> {
 
     // [0, 1, 2, 3], c:2 => [0, 1, 2]
     if (hc + 1 !== lastHistory.length - 1)
-      lastHistory = lastHistory.slice(0, hc + 2)
+      lastHistory = lastHistory.slice(0, hc + 1)
 
     // [1, 2, 3, 4] => [2, 3, 4]
     else if (lastHistory.length >= MAX_HISTORY)
@@ -291,27 +294,29 @@ export default class Studio extends React.Component<{}, State> {
   }
 
   undoRedo(undo: boolean) {
-    const hc = this.state.historyCursor + (undo ? 0 : 1),
+    const hc = this.state.historyCursor,
+      redo = !undo,
       history = this.state.capsHistory
 
-    if (!(hc >= 0 && hc <= history.length)) return
-    // FIXME for redo when len of history == 1
-    
+    if (!((undo && (hc >= 0)) || (redo && (hc + 1 < history.length)))) return
+
     let
       caps = this.state.captions,
-      lastAction = history[hc]
+      lastAction = history[hc + (undo ? 0 : +1)]
 
     if (
       (undo && lastAction.type === ActionTypes.Create) ||
-      (!undo && lastAction.type === ActionTypes.Delete)
-    )
+      (redo && lastAction.type === ActionTypes.Delete)
+    ) {
       this.DeleteCaptionHandler(caps.findIndex(c => c.hash === lastAction.changes[0].hash))
+    }
 
     else if (
       (undo && lastAction.type === ActionTypes.Delete) ||
-      (!undo && lastAction.type === ActionTypes.Create)
-    )
+      (redo && lastAction.type === ActionTypes.Create)
+    ) {
       this.addCaptionHandler(lastAction.changes[0])
+    }
 
     else {
       if (undo)
@@ -324,6 +329,7 @@ export default class Studio extends React.Component<{}, State> {
       historyCursor: hc + (undo ? -1 : +1),
       selected_caption_i: null
     })
+
   }
 
   saveFile() {
