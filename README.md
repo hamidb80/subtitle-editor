@@ -3,6 +3,7 @@
 
 ## demo
 you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
+TODO: update the demo page
 
 ## features
 * shortcuts/mouse
