@@ -45,9 +45,11 @@ export default class CaptionEditor extends React.Component<Props, State> {
     })
 
     hotkeys('home', kv => {
+      kv.preventDefault()
       this.onCaptionTimeRangeChanged(null, 0)
     })
     hotkeys('end', kv => {
+      kv.preventDefault()
       this.onCaptionTimeRangeChanged(0, null)
     })
 
