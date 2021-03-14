@@ -5,6 +5,8 @@ import FileInput from "../components/form/FileInput"
 import appStates from "../utils/states"
 import { parseSrt } from "../utils/caption"
 
+import "./intro.sass"
+
 type State = {
   subtitleUrl: string
   videoUrl: string
@@ -54,6 +56,7 @@ export default class Intro extends React.Component<{}, State> {
     if (this.state.canPass)
       return <Redirect to="/studio" />
 
+    // TODO: add repo page
     return (<>
       <h2 className="page-title" >Intro</h2>
       <div className="wrapper">
@@ -85,6 +88,15 @@ export default class Intro extends React.Component<{}, State> {
           </button>
         </div>
 
-      </div></>)
+      </div>
+
+      <footer className="p-2 w-100 d-flex justify-content-center">
+        <a href="https://github.com/hamidb80/subtitle-edtior/" target="blank"
+          className="d-flex align-items-center">
+          <span className="fab fa-github github-logo"></span>
+          <span className="pb-1 mx-2"> project link on github </span>
+        </a>
+      </footer>
+    </>)
   }
 }

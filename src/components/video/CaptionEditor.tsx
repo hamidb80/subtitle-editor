@@ -2,7 +2,9 @@ import React, { ChangeEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 
 import { TimeControll } from "."
-import { Caption } from "../../utils/caption"
+import { Caption, areSameCaptions } from "../../utils/caption"
+import { v4 as uuid } from "uuid"
+
 
 import { SHOOT_SUBTITLE_TIME_MAJOR } from "../../utils/consts"
 
@@ -14,11 +16,11 @@ type Props = {
   totalTime: number // video duration
 
   caption: Caption | null
-  onCaptionChanged: (c: Caption) => void
+  onCaptionChanged: (cOld: Caption, cNew: Caption) => void
 }
 type State = {
-  my_caption: Caption | null, // a copy of props.caption to edit
-  content2change: string // 
+  lastCaption: Caption | null, // a copy of props.caption to edit
+  newCaption: Caption | null
 }
 export default class CaptionEditor extends React.Component<Props, State> {
   inputRef: React.RefObject<HTMLInputElement>
@@ -27,8 +29,8 @@ export default class CaptionEditor extends React.Component<Props, State> {
     super(props)
 
     this.state = {
-      my_caption: null,
-      content2change: ""
+      lastCaption: null,
+      newCaption: null
     }
     this.inputRef = React.createRef()
 
@@ -67,29 +69,31 @@ export default class CaptionEditor extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if ((this.props.caption === null && this.state.my_caption !== null) ||
-      (this.props.caption !== null && (this.props.caption.hash !== this.state.my_caption?.hash))) {
+    if ((this.props.caption === null && this.state.lastCaption !== null) ||
+      (this.props.caption !== null && (this.props.caption.hash !== this.state.lastCaption?.hash))) {
 
       this.handleCaptionChange() // onblur is not triggered when you blur it by code, so this line solves the problem
 
+      const newPropCap = this.props.caption === null ? null : { ...this.props.caption }
       this.setState({
-        my_caption: this.props.caption === null ? null : { ...this.props.caption },
-        content2change: this.props.caption !== null ? this.props.caption.content : ""
+        lastCaption: newPropCap ? { ...newPropCap } : null,
+        newCaption: newPropCap ? { ...newPropCap } : null,
       })
     }
   }
-
 
   isCapInTimeRange(time: number): boolean {
     return time >= 0 && time <= this.props.totalTime
   }
 
   onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
-    this.setState({ content2change: e.target.value })
+    const newCap = this.state.newCaption
+    if (newCap !== null)
+      this.setState({ newCaption: { ...newCap, content: e.target.value } })
   }
-  onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null value for stick time button
-    if (this.state.my_caption === null) return
-    const cap = this.state.my_caption
+  onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null is the value for stick time button
+    const cap = this.state.newCaption
+    if (cap === null) return
 
     // controll the caption start/end time 
     if (startChange === null)
@@ -110,27 +114,35 @@ export default class CaptionEditor extends React.Component<Props, State> {
         cap.start = cap.end
     }
 
-    this.handleCaptionChange()
+    this.setState(
+      { newCaption: cap },
+      this.handleCaptionChange)
+
   }
 
   handleCaptionChange() {
-    if (this.state.my_caption === null)
-      return
+    if (this.state.lastCaption === null || this.state.newCaption === null) return
 
-    const new_cap = {
-      ...this.state.my_caption,
-      content: this.state.content2change
+    if (!areSameCaptions(this.state.lastCaption, this.state.newCaption)) {
+      const
+        lastCaption = this.state.lastCaption,
+        newCap = { ...this.state.newCaption, hash: uuid() }
+
+      this.setState(
+        {
+          lastCaption: { ...newCap },
+          newCaption: { ...newCap }
+        },
+        () => this.props.onCaptionChanged(lastCaption, newCap))
     }
-    this.props.onCaptionChanged(new_cap)
   }
 
   render() {
     const cap = this.props.caption // myabe it's not available [for eg it can be removed]
     if (cap)
       this.inputRef.current?.focus()
-    // NOTE: causes prolem due to undesired blur event
-    // else 
-    //   this.inputRef.current?.blur()
+    else
+      this.inputRef.current?.blur()
 
     return (
       <div className="caption-editor-wrapper">
@@ -145,9 +157,9 @@ export default class CaptionEditor extends React.Component<Props, State> {
         <div>
           <input type="text" ref={this.inputRef}
             className={"form-control caption-editor " + (cap ? '' : 'invisible') +
-              ((/^\w+/).test(this.state.content2change) ? "ltr" : "rtl")
+              ((/^\w+/).test(this.state.newCaption?.content || "") ? "ltr" : "rtl")
             }
-            value={this.state.content2change}
+            value={this.state.newCaption?.content || ""}
             onChange={this.onCaptionContentChanged}
             onBlur={this.handleCaptionChange} />
         </div>

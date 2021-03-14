@@ -3,7 +3,7 @@ import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
-import { Caption, export2srt, areSameCaptions, captionsCompare } from "../utils/caption"
+import { Caption, export2srt, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
@@ -56,11 +56,11 @@ export default class Studio extends React.Component<{}, State> {
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
     this.onVideoError = this.onVideoError.bind(this)
 
-    this.addCaptionHandler = this.addCaptionHandler.bind(this)
+    this.addCaptionUIHandler = this.addCaptionUIHandler.bind(this)
     this.addCaption = this.addCaption.bind(this)
-    this.changeCaptionHandler = this.changeCaptionHandler.bind(this)
+    this.changeCaptionUIHandler = this.changeCaptionUIHandler.bind(this)
     this.changeCaption = this.changeCaption.bind(this)
-    this.DeleteCaptionHandler = this.DeleteCaptionHandler.bind(this)
+    this.DeleteCaptionUIHandler = this.DeleteCaptionUIHandler.bind(this)
     this.DeleteCaption = this.DeleteCaption.bind(this)
     this.captionSelectionToggle = this.captionSelectionToggle.bind(this)
 
@@ -171,7 +171,7 @@ export default class Studio extends React.Component<{}, State> {
 
   // ----------------- functionalities --------------------
 
-  addCaptionHandler(newCap: Caption) {
+  addCaptionUIHandler(newCap: Caption) {
     const capList = this.state.captions
     capList.push(newCap)
 
@@ -190,7 +190,7 @@ export default class Studio extends React.Component<{}, State> {
         hash: uuid(),
       }
 
-    this.addCaptionHandler(newCap)
+    this.addCaptionUIHandler(newCap)
 
     history.push({
       type: ActionTypes.Create,
@@ -205,7 +205,7 @@ export default class Studio extends React.Component<{}, State> {
       this.updateHistoryCursor)
   }
 
-  changeCaptionHandler(fromCap: Caption, toCap: Caption): boolean {
+  changeCaptionUIHandler(fromCap: Caption, toCap: Caption): boolean {
     const
       caps = this.state.captions,
       fromCapIndex = caps.findIndex(c => c.hash === fromCap.hash)
@@ -213,35 +213,32 @@ export default class Studio extends React.Component<{}, State> {
     // don't remove this - even I don't know why
     if (fromCapIndex === -1) return false
 
-    if (!areSameCaptions(caps[fromCapIndex], toCap)) { // to avoid useless history captures
-      caps[fromCapIndex] = toCap
-      this.setState({ captions: caps })
-      return true
-    }
-    return false
+    caps[fromCapIndex] = toCap
+    this.setState({ captions: caps })
+
+    return true
   }
-  changeCaption(changedCap: Caption) {
+  changeCaption(oldCap: Caption, newCap: Caption) {
     const
       history = this.state.capsHistory,
       caps = this.state.captions,
-      fromCapIndex = caps.findIndex(c => c.hash === changedCap.hash)
+      oldCapIndex = caps.findIndex(c => c.hash === oldCap.hash)
 
-    if (fromCapIndex === -1) return
+    if (oldCapIndex === -1) return
 
-    const fromCap = caps[fromCapIndex]
-    changedCap.hash = uuid()
-
-    const saved = this.changeCaptionHandler(fromCap, changedCap)
+    const saved = this.changeCaptionUIHandler(oldCap, newCap)
     if (saved)
       history.push({
         type: ActionTypes.Change,
-        changes: [fromCap, changedCap]
+        changes: [oldCap, newCap]
       })
 
-    this.setState({ capsHistory: history }, this.updateHistoryCursor)
+    this.setState(
+      { capsHistory: history },
+      this.updateHistoryCursor)
   }
 
-  DeleteCaptionHandler(selected_caption_index: number) {
+  DeleteCaptionUIHandler(selected_caption_index: number) {
     const caps = this.state.captions
     caps.splice(selected_caption_index, 1) // remove it from captions
 
@@ -263,7 +260,7 @@ export default class Studio extends React.Component<{}, State> {
       changes: [caps[this.state.selected_caption_i],]
     })
 
-    this.DeleteCaptionHandler(this.state.selected_caption_i)
+    this.DeleteCaptionUIHandler(this.state.selected_caption_i)
 
     this.setState(
       { capsHistory: history },
@@ -308,21 +305,21 @@ export default class Studio extends React.Component<{}, State> {
       (undo && lastAction.type === ActionTypes.Create) ||
       (redo && lastAction.type === ActionTypes.Delete)
     ) {
-      this.DeleteCaptionHandler(caps.findIndex(c => c.hash === lastAction.changes[0].hash))
+      this.DeleteCaptionUIHandler(caps.findIndex(c => c.hash === lastAction.changes[0].hash))
     }
 
     else if (
       (undo && lastAction.type === ActionTypes.Delete) ||
       (redo && lastAction.type === ActionTypes.Create)
     ) {
-      this.addCaptionHandler(lastAction.changes[0])
+      this.addCaptionUIHandler(lastAction.changes[0])
     }
 
     else {
       if (undo)
-        this.changeCaptionHandler(lastAction.changes[1], lastAction.changes[0])
+        this.changeCaptionUIHandler(lastAction.changes[1], lastAction.changes[0])
       else
-        this.changeCaptionHandler(lastAction.changes[0], lastAction.changes[1])
+        this.changeCaptionUIHandler(lastAction.changes[0], lastAction.changes[1])
     }
 
     this.setState({
