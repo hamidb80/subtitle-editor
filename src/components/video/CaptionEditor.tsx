@@ -5,7 +5,6 @@ import { TimeControll } from "."
 import { Caption, areSameCaptions } from "../../utils/caption"
 import { v4 as uuid } from "uuid"
 
-
 import { SHOOT_SUBTITLE_TIME_MAJOR } from "../../utils/consts"
 
 import './caption-editor.sass'
@@ -40,6 +39,8 @@ export default class CaptionEditor extends React.Component<Props, State> {
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
     this.isCapInTimeRange = this.isCapInTimeRange.bind(this)
   }
+
+  // ------------------- component API -------------------------
 
   componentDidMount() {
     hotkeys('alt+left', () => {
@@ -81,6 +82,8 @@ export default class CaptionEditor extends React.Component<Props, State> {
       })
     }
   }
+
+  // ------------------- functionalities -------------------------
 
   isCapInTimeRange(time: number): boolean {
     return time >= 0 && time <= this.props.totalTime
@@ -157,6 +160,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
         <div>
           <input type="text" ref={this.inputRef}
             className={"form-control caption-editor " + (cap ? '' : 'invisible') +
+              // TODO make it customzible
               ((/^\w+/).test(this.state.newCaption?.content || "") ? "ltr" : "rtl")
             }
             value={this.state.newCaption?.content || ""}

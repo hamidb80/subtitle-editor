@@ -172,17 +172,14 @@ export default class Studio extends React.Component<{}, State> {
   // ----------------- functionalities --------------------
 
   addCaptionUIHandler(newCap: Caption) {
-    const capList = this.state.captions
-    capList.push(newCap)
-
-    this.setState({ captions: capList, })
+    this.setState({
+      captions: this.state.captions.concat(newCap)
+    })
   }
 
   addCaption() {
     const
       t = this.state.currentTime,
-      history = this.state.capsHistory,
-
       newCap = {
         start: t,
         end: t + 1,
@@ -191,85 +188,67 @@ export default class Studio extends React.Component<{}, State> {
       }
 
     this.addCaptionUIHandler(newCap)
-
-    history.push({
-      type: ActionTypes.Create,
-      changes: [newCap,]
-    })
-
-    this.setState(
-      {
-        capsHistory: history,
-        selected_caption_i: this.state.captions.length - 1
-      },
-      this.updateHistoryCursor)
+    this.setState({
+      capsHistory: this.state.capsHistory.concat({
+        type: ActionTypes.Create,
+        changes: [newCap,]
+      }),
+      selected_caption_i: this.state.captions.length - 1
+    }, this.updateHistoryCursor)
   }
 
-  changeCaptionUIHandler(fromCap: Caption, toCap: Caption): boolean {
-    const
-      caps = this.state.captions,
-      fromCapIndex = caps.findIndex(c => c.hash === fromCap.hash)
-
-    // don't remove this - even I don't know why
-    if (fromCapIndex === -1) return false
-
-    caps[fromCapIndex] = toCap
-    this.setState({ captions: caps })
-
-    return true
+  changeCaptionUIHandler(fromCap: Caption, toCap: Caption) {
+    this.setState({
+      captions: this.state.captions.map(c =>
+        c.hash === fromCap.hash ? toCap : c)
+    })
   }
   changeCaption(oldCap: Caption, newCap: Caption) {
     const
-      history = this.state.capsHistory,
       caps = this.state.captions,
       oldCapIndex = caps.findIndex(c => c.hash === oldCap.hash)
 
-    if (oldCapIndex === -1) return
+    if (oldCapIndex === -1) return // it can happen due to fast repeative user actions
 
-    const saved = this.changeCaptionUIHandler(oldCap, newCap)
-    if (saved)
-      history.push({
+    this.changeCaptionUIHandler(oldCap, newCap)
+    this.setState({
+      capsHistory: this.state.capsHistory.concat({
         type: ActionTypes.Change,
         changes: [oldCap, newCap]
       })
-
-    this.setState(
-      { capsHistory: history },
-      this.updateHistoryCursor)
+    }, this.updateHistoryCursor)
   }
 
+  // TODO swap `xUIHandler`s with `x`s
   DeleteCaptionUIHandler(selected_caption_index: number) {
-    const caps = this.state.captions
-    caps.splice(selected_caption_index, 1) // remove it from captions
-
     this.setState({
-      captions: caps,
+      captions: this.state.captions.filter(
+        (c, i) => i !== selected_caption_index),
+
       selected_caption_i: null,
     })
   }
 
   DeleteCaption() {
-    const
-      caps = this.state.captions,
-      history = this.state.capsHistory
-
     if (this.state.selected_caption_i === null) return
 
-    history.push({
-      type: ActionTypes.Delete,
-      changes: [caps[this.state.selected_caption_i],]
-    })
+    const caps = this.state.captions
 
     this.DeleteCaptionUIHandler(this.state.selected_caption_i)
 
-    this.setState(
-      { capsHistory: history },
-      this.updateHistoryCursor)
+    this.setState({
+      capsHistory: this.state.capsHistory.concat({
+        type: ActionTypes.Delete,
+        changes: [caps[this.state.selected_caption_i],]
+      })
+    }, this.updateHistoryCursor)
   }
 
   captionSelectionToggle(index: number) {
-    const newState = this.state.selected_caption_i === index ? null : index
-    this.setState({ selected_caption_i: newState })
+    this.setState({
+      selected_caption_i:
+        this.state.selected_caption_i === index ? null : index
+    })
   }
 
   updateHistoryCursor() {
@@ -295,6 +274,7 @@ export default class Studio extends React.Component<{}, State> {
       redo = !undo,
       history = this.state.capsHistory
 
+    // out of range check
     if (!((undo && (hc >= 0)) || (redo && (hc + 1 < history.length)))) return
 
     let
@@ -326,7 +306,6 @@ export default class Studio extends React.Component<{}, State> {
       historyCursor: hc + (undo ? -1 : +1),
       selected_caption_i: null
     })
-
   }
 
   saveFile() {
