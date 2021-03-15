@@ -71,7 +71,8 @@ export default class CaptionEditor extends React.Component<Props, State> {
 
   componentDidUpdate() {
     if ((this.props.caption === null && this.state.lastCaption !== null) ||
-      (this.props.caption !== null && (this.props.caption.hash !== this.state.lastCaption?.hash))) {
+      (this.props.caption !== null && (
+        this.props.caption.hash !== this.state.lastCaption?.hash))) {
 
       this.handleCaptionChange() // onblur is not triggered when you blur it by code, so this line solves the problem
 
@@ -92,7 +93,9 @@ export default class CaptionEditor extends React.Component<Props, State> {
   onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
     const newCap = this.state.newCaption
     if (newCap !== null)
-      this.setState({ newCaption: { ...newCap, content: e.target.value } })
+      this.setState({
+        newCaption: { ...newCap, content: e.target.value }
+      })
   }
   onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null is the value for stick time button
     const cap = this.state.newCaption
@@ -131,12 +134,12 @@ export default class CaptionEditor extends React.Component<Props, State> {
         lastCaption = this.state.lastCaption,
         newCap = { ...this.state.newCaption, hash: uuid() }
 
-      this.setState(
-        {
-          lastCaption: { ...newCap },
-          newCaption: { ...newCap }
-        },
-        () => this.props.onCaptionChanged(lastCaption, newCap))
+      console.log(`changed from ${lastCaption.content} to ${newCap.content}`);
+
+      this.setState({
+        lastCaption: { ...newCap },
+        newCaption: { ...newCap }
+      }, () => this.props.onCaptionChanged(lastCaption, newCap))
     }
   }
 
@@ -158,7 +161,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
         }
 
         <div>
-          <input type="text" ref={this.inputRef}
+          <input type="text" ref={this.inputRef} disabled={cap === null}
             className={"form-control caption-editor " + (cap ? '' : 'invisible') +
               // TODO make it customzible
               ((/^\w+/).test(this.state.newCaption?.content || "") ? "ltr" : "rtl")

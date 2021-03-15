@@ -202,18 +202,21 @@ export default class Studio extends React.Component<{}, State> {
   }
   changeCaptionUIHandler(oldCap: Caption, newCap: Caption) {
     const
-      caps = this.state.captions,
-      oldCapIndex = caps.findIndex(c => c.hash === oldCap.hash)
+      oldCapIndex = this.state.captions.findIndex(c => c.hash === oldCap.hash)
 
     if (oldCapIndex === -1) return // it can happen due to fast repeative user actions
 
-    this.setState(ls => ({
-      capsHistory: [...ls.capsHistory, {
-        type: ActionTypes.Change,
-        changes: [oldCap, newCap]
-      }],
-      ...this.changeCaption(oldCap, newCap)
-    }), this.updateHistoryCursor)
+    this.setState(
+      {
+        capsHistory: [...this.state.capsHistory, {
+          type: ActionTypes.Change,
+          changes: [oldCap, newCap]
+        }],
+        ...this.changeCaption(oldCap, newCap)
+      }
+
+      , this.updateHistoryCursor
+    )
   }
 
   DeleteCaption(selected_caption_index: number): object {
