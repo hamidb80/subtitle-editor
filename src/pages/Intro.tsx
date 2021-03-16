@@ -56,7 +56,6 @@ export default class Intro extends React.Component<{}, State> {
     if (this.state.canPass)
       return <Redirect to="/studio" />
 
-    // TODO: add repo page
     return (<>
       <h2 className="page-title" >Intro</h2>
       <div className="wrapper">

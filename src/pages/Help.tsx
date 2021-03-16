@@ -1,6 +1,8 @@
 import React from 'react'
 import './help.sass'
 
+import TCtrolImg from '../assets/TimeControll.jpg';
+
 type State = {
   shortcuts: {
     keys: string[],
@@ -73,24 +75,38 @@ export default class Help extends React.Component<{}, State> {
     ]
   }
 
-
   render() {
     return (<>
       <h2 className="page-title">Help</h2>
       <div className="wrapper">
-        
-        {this.state.shortcuts.map(sh => (
-          <div className="shortcut d-flex justify-content-between">
-            <span className="keys">
-              {sh.keys.map((k, i) => <>
-                {i !== 0 ? <span className="plus">+</span> : ''}
-                <code className="key">{k}</code>
-              </>)}
-            </span>
 
-            <span className="clue"> {sh.clue} </span>
-          </div>
-        ))}
+        <h3> <a href="#features">#features</a> </h3>
+        <ul id="features">
+          <li>
+            <img src={TCtrolImg} height="180" className="d-block" alt="" />
+            <span>
+              you can change timestamp manually by double clicking on it
+              changes will be applied after clicking out of the timestamp
+            </span>
+          </li>
+        </ul>
+
+        <h3> <a href="#shortcuts">#shortcuts</a> </h3>
+        <ul id="shortcuts">
+          {this.state.shortcuts.map(sh => (
+            <li className="shortcut d-flex justify-content-between">
+              <span className="keys">
+                {sh.keys.map((k, i) => <>
+                  {i !== 0 ? <span className="plus">+</span> : ''}
+                  <code className="key">{k}</code>
+                </>)}
+              </span>
+
+              <span className="clue"> {sh.clue} </span>
+            </li>
+          ))}
+
+        </ul>
 
       </div></>)
   }

@@ -70,16 +70,16 @@ export default class CaptionEditor extends React.Component<Props, State> {
   }
 
   componentDidUpdate() {
-    if ((this.props.caption === null && this.state.lastCaption !== null) ||
-      (this.props.caption !== null && (
-        this.props.caption.hash !== this.state.lastCaption?.hash))) {
-
+    if (
+      (!this.props.caption && this.state.lastCaption) ||
+      (this.props.caption && (this.props.caption.hash !== this.state.lastCaption?.hash))
+    ) {
       this.handleCaptionChange() // onblur is not triggered when you blur it by code, so this line solves the problem
 
       const newPropCap = this.props.caption === null ? null : { ...this.props.caption }
       this.setState({
         lastCaption: newPropCap ? { ...newPropCap } : null,
-        newCaption: newPropCap ? { ...newPropCap } : null,
+        newCaption: newPropCap ? { ...newPropCap } : null
       })
     }
   }
@@ -133,8 +133,6 @@ export default class CaptionEditor extends React.Component<Props, State> {
       const
         lastCaption = this.state.lastCaption,
         newCap = { ...this.state.newCaption, hash: uuid() }
-
-      console.log(`changed from ${lastCaption.content} to ${newCap.content}`);
 
       this.setState({
         lastCaption: { ...newCap },
