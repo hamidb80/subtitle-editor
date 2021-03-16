@@ -25,6 +25,10 @@ export default class Help extends React.Component<{}, State> {
         clue: 'go forward/backward in timeline [big step]',
       },
       {
+        keys: ['home/end'],
+        clue: 'shoot time to start/end of the video',
+      },
+      {
         keys: ['ctrl', '+/-'],
         clue: 'zoom in/out in timeline',
       },
@@ -51,7 +55,7 @@ export default class Help extends React.Component<{}, State> {
         clue: 'shoot start of selected caption forward/backward',
       },
       {
-        keys: ['home/end'],
+        keys: ['ctrl','home/end'],
         clue: 'shoot start/end of selected caption to the current time',
       },
       {
