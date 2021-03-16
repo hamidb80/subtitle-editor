@@ -2,6 +2,7 @@ import React, { ChangeEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 
 import { TimeControll } from "."
+import { CircleBtn } from "../form"
 import { Caption, areSameCaptions } from "../../utils/caption"
 import { v4 as uuid } from "uuid"
 
@@ -19,7 +20,9 @@ type Props = {
 }
 type State = {
   lastCaption: Caption | null, // a copy of props.caption to edit
-  newCaption: Caption | null
+  newCaption: Caption | null,
+
+  is_ltr: boolean
 }
 export default class CaptionEditor extends React.Component<Props, State> {
   inputRef: React.RefObject<HTMLInputElement>
@@ -29,7 +32,9 @@ export default class CaptionEditor extends React.Component<Props, State> {
 
     this.state = {
       lastCaption: null,
-      newCaption: null
+      newCaption: null,
+
+      is_ltr: true
     }
     this.inputRef = React.createRef()
 
@@ -54,6 +59,15 @@ export default class CaptionEditor extends React.Component<Props, State> {
     hotkeys('ctrl+end', kv => {
       kv.preventDefault()
       this.onCaptionTimeRangeChanged(0, null)
+    })
+
+    hotkeys('ctrl+[', kv => {
+      kv.preventDefault()
+      this.setState({is_ltr: true})
+    })
+    hotkeys('ctrl+]', kv => {
+      kv.preventDefault()
+      this.setState({is_ltr: false})
     })
 
     hotkeys('alt+right', () => {
@@ -159,11 +173,14 @@ export default class CaptionEditor extends React.Component<Props, State> {
         }
 
         <div>
+          <CircleBtn
+            disabled={cap === null}
+            onClick={() => this.setState(ls => ({is_ltr: !ls.is_ltr}))}
+            iconClassName={"fas fa-align-" + (this.state.is_ltr ? "left" : "right")}
+          />
           <input type="text" ref={this.inputRef} disabled={cap === null}
             className={"form-control caption-editor " + (cap ? '' : 'invisible') +
-              // TODO make it customzible
-              ((/^\w+/).test(this.state.newCaption?.content || "") ? "ltr" : "rtl")
-            }
+              (this.state.is_ltr ? "ltr" : "rtl")}
             value={this.state.newCaption?.content || ""}
             onChange={this.onCaptionContentChanged}
             onBlur={this.handleCaptionChange} />

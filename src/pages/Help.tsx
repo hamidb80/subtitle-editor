@@ -66,6 +66,10 @@ export default class Help extends React.Component<{}, State> {
         keys: ['ctrl', 'delete'],
         clue: 'delete selected caption',
       },
+      {
+        keys: ['ctrl', '[/]'],
+        clue: 'set text direction in caption editor input left-to-right/right-to-left',
+      },
 
       {
         keys: ['ctrl', 'z/y'],
