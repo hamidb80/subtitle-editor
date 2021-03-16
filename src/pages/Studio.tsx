@@ -7,7 +7,7 @@ import { Caption, export2srt, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
-import { CircleBtn } from "../components/form"
+import { CircleBtn, pushToast } from "../components/form"
 
 import "./studio.sass"
 const fileDownload = require('js-file-download')
@@ -174,7 +174,11 @@ export default class Studio extends React.Component<{}, State> {
   }
 
   onVideoError(e: SyntheticEvent) {
-    alert('video load error')
+    pushToast({
+      kind: 'danger',
+      message: "error happend while loading video",
+      duration: 5000
+    })
   }
 
   // ----------------- functionalities --------------------

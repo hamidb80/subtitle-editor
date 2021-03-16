@@ -1,7 +1,8 @@
 import React from 'react'
 import './help.sass'
 
-import TCtrolImg from '../assets/TimeControll.jpg';
+import TCtrolImg from '../assets/TimeControll.jpg'
+import StickTimeImg from '../assets/stickTime.png'
 
 type State = {
   shortcuts: {
@@ -90,6 +91,7 @@ export default class Help extends React.Component<{}, State> {
 
         <h3> <a href="#features">#features</a> </h3>
         <ul id="features">
+
           <li>
             <img src={TCtrolImg} height="180" className="d-block" alt="" />
             <span>
@@ -97,6 +99,14 @@ export default class Help extends React.Component<{}, State> {
               changes will be applied after clicking out of the timestamp
             </span>
           </li>
+
+          <li>
+            <img src={StickTimeImg} height="180" className="d-block" alt="" />
+            <span>
+              use stick time button to stick start/end of selected caption to the timeline cursor
+            </span>
+          </li>
+
         </ul>
 
         <h3> <a href="#shortcuts">#shortcuts</a> </h3>

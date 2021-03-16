@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, Redirect } from "react-router-dom"
 
-import FileInput from "../components/form/FileInput"
+import { FileInput, pushToast } from "../components/form"
 import appStates from "../utils/states"
 import { parseSrt } from "../utils/caption"
 
@@ -50,6 +50,13 @@ export default class Intro extends React.Component<{}, State> {
   checkValidation() {
     if (this.state.videoUrl)
       this.setState({ canPass: true })
+
+    else
+      pushToast({
+        kind: 'danger', 
+        message: "select a video first",
+         duration: 5000
+      })
   }
 
   render() {
@@ -61,7 +68,7 @@ export default class Intro extends React.Component<{}, State> {
       <div className="wrapper">
 
         <div className="alert alert-secondary">
-          consider‌ <Link to="/help">‌help page‌</Link> for learning shortcuts
+          consider‌ <Link to="/help">‌help page‌</Link> for learning app features & shortcuts
         </div>
         <div>
           <span>video file:</span>
