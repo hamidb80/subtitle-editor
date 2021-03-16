@@ -5,10 +5,10 @@ import { Intro, Studio, Help } from "./pages"
 
 import "./global.sass"
 
-class App extends React.Component {
+export default  class App extends React.Component {
   render() {
     return (
-      <Router>
+      <Router basename="/subtitle-edtior">
         <Route exact path='/' component={Intro}></Route>
         <Route exact path='/studio' component={Studio}></Route>
         <Route exact path='/help' component={Help}></Route>
@@ -16,5 +16,3 @@ class App extends React.Component {
     )
   }
 }
-
-export default App

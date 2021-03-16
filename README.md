@@ -5,8 +5,6 @@
 you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
 
 ## TODOs:
-* [ ] update the demo page
-* [ ] fix digital time font problem for demo page
 * [ ] add video resize option
 * [ ] add custumizable rtl/lrt text direction for subtitle editor input
 * [ ] fix large video timeline capacity problem
