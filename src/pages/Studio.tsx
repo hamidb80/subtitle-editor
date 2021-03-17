@@ -3,6 +3,7 @@ import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
+import { simpleSort } from "../utils/funcs"
 import { Caption, export2srt, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
@@ -67,6 +68,9 @@ export default class Studio extends React.Component<{}, State> {
     this.updateHistory = this.updateHistory.bind(this)
     this.undoRedo = this.undoRedo.bind(this)
 
+    this.goToLastStart = this.goToLastStart.bind(this)
+    this.goToNextEnd = this.goToNextEnd.bind(this)
+
     this.saveFile = this.saveFile.bind(this)
   }
 
@@ -93,6 +97,14 @@ export default class Studio extends React.Component<{}, State> {
         kv.preventDefault()
         this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MAJOR)
       }
+    })
+    hotkeys('shift+pageup', kv => {
+      kv.preventDefault()
+      this.goToLastStart()
+    })
+    hotkeys('shift+pagedown', kv => {
+      kv.preventDefault()
+      this.goToNextEnd()
     })
     hotkeys('ctrl+left', kv => {
       kv.preventDefault()
@@ -182,6 +194,7 @@ export default class Studio extends React.Component<{}, State> {
   }
 
   // ----------------- functionalities --------------------
+  // -- captions changes
 
   addCaptionObject(newCap: Caption): object {
     return { captions: [...this.state.captions, newCap] }
@@ -240,7 +253,7 @@ export default class Studio extends React.Component<{}, State> {
 
     const newHistory = {
       type: ActionTypes.Delete,
-      changes: [ls.captions[ls.selected_caption_i as number],]
+      changes: [ls.captions[ls.selected_caption_i],]
     }
 
     this.setState({
@@ -250,17 +263,10 @@ export default class Studio extends React.Component<{}, State> {
     }, () => this.updateHistory(newHistory))
   }
 
-  captionSelectionToggle(index: number) {
-    this.setState({
-      selected_caption_i:
-        this.state.selected_caption_i === index ? null : index
-    })
-  }
-
   updateHistory(newAction: ActionHistory) {
     const hc = this.state.historyCursor
     let lastHistory = this.state.capsHistory
-    
+
     // [0, 1, 2, 3], c:2 => [0, 1, 2]
     if (hc !== lastHistory.length - 1) // if it didn't point on the last history before updating history
       lastHistory = lastHistory.slice(0, hc + 1)
@@ -317,6 +323,39 @@ export default class Studio extends React.Component<{}, State> {
       selected_caption_i: null,
       historyCursor: hc + (undo ? -1 : +1),
     })
+  }
+
+  // -- caption selection
+
+  captionSelectionToggle(index: number) {
+    this.setState({
+      selected_caption_i:
+        this.state.selected_caption_i === index ? null : index
+    })
+  }
+
+  goToNextEnd() {
+    const
+      ls = this.state,
+      ends = ls.captions
+        .filter(c => ls.currentTime < c.end)
+        .map(c => c.end)
+        .sort(simpleSort)
+
+    if (ends.length)
+      this.VideoPlayerRef.current?.setTime(ends[0])
+  }
+
+  goToLastStart() {
+    const
+      ls = this.state,
+      starts = ls.captions
+        .filter(c => ls.currentTime > c.start)
+        .map(c => c.start)
+        .sort(simpleSort)
+
+    if (starts.length)
+      this.VideoPlayerRef.current?.setTime(starts[starts.length - 1])
   }
 
   saveFile() {
@@ -386,6 +425,19 @@ export default class Studio extends React.Component<{}, State> {
             disabled={this.state.selected_caption_i === null}
             text="delete"
             onClick={this.deleteCaptionUIHandler}
+          />
+
+          <CircleBtn
+            iconClassName="fas fa-chevron-left"
+            disabled={caps.length === 0}
+            text="last start"
+            onClick={this.goToLastStart}
+          />
+          <CircleBtn
+            iconClassName="fas fa-chevron-right"
+            disabled={caps.length === 0}
+            text="next end "
+            onClick={this.goToNextEnd}
           />
 
         </div>

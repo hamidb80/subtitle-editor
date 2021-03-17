@@ -61,11 +61,11 @@ export default class CaptionEditor extends React.Component<Props, State> {
       this.onCaptionTimeRangeChanged(0, null)
     })
 
-    hotkeys('ctrl+[', kv => {
+    hotkeys('ctrl+9', kv => {
       kv.preventDefault()
       this.setState({is_ltr: true})
     })
-    hotkeys('ctrl+]', kv => {
+    hotkeys('ctrl+0', kv => {
       kv.preventDefault()
       this.setState({is_ltr: false})
     })
