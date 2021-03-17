@@ -14,7 +14,7 @@ export default class Help extends React.Component<{}, State> {
   state = {
     shortcuts: [
       {
-        keys: ['ctrl', 'enter'],
+        keys: ['ctrl', 'space'],
         clue: 'play/pause video player',
       },
       {
