@@ -64,7 +64,7 @@ export default class Studio extends React.Component<{}, State> {
     this.deleteCaptionObject = this.deleteCaptionObject.bind(this)
     this.captionSelectionToggle = this.captionSelectionToggle.bind(this)
 
-    this.updateHistoryCursor = this.updateHistoryCursor.bind(this)
+    this.updateHistory = this.updateHistory.bind(this)
     this.undoRedo = this.undoRedo.bind(this)
 
     this.saveFile = this.saveFile.bind(this)
@@ -197,15 +197,15 @@ export default class Studio extends React.Component<{}, State> {
         hash: uuid(),
       }
 
+    const newHistory = {
+      type: ActionTypes.Create,
+      changes: [newCap,]
+    }
     this.setState({
-      capsHistory: [...this.state.capsHistory, {
-        type: ActionTypes.Create,
-        changes: [newCap,]
-      }],
       ...this.addCaptionObject(newCap),
       selected_caption_i: this.state.captions.length
 
-    }, this.updateHistoryCursor)
+    }, () => this.updateHistory(newHistory))
   }
 
   changeCaptionObject(fromCap: Caption, toCap: Caption): object {
@@ -214,22 +214,17 @@ export default class Studio extends React.Component<{}, State> {
     }
   }
   changeCaptionUIHandler(oldCap: Caption, newCap: Caption) {
-    const
-      oldCapIndex = this.state.captions.findIndex(c => c.hash === oldCap.hash)
-
+    const oldCapIndex = this.state.captions.findIndex(c => c.hash === oldCap.hash)
     if (oldCapIndex === -1) return // it can happen due to fast repeative user actions
 
-    this.setState(
-      {
-        capsHistory: [...this.state.capsHistory, {
-          type: ActionTypes.Change,
-          changes: [oldCap, newCap]
-        }],
-        ...this.changeCaptionObject(oldCap, newCap)
-      }
+    const newHistory = {
+      type: ActionTypes.Change,
+      changes: [oldCap, newCap]
+    }
 
-      , this.updateHistoryCursor
-    )
+    this.setState(
+      this.changeCaptionObject(oldCap, newCap),
+      () => this.updateHistory(newHistory))
   }
 
   deleteCaptionObject(selected_caption_index: number): object {
@@ -243,16 +238,16 @@ export default class Studio extends React.Component<{}, State> {
     const ls = this.state // last state
     if (ls.selected_caption_i === null) return
 
-    this.setState({
-      capsHistory: [...ls.capsHistory, {
-        type: ActionTypes.Delete,
-        changes: [ls.captions[ls.selected_caption_i],]
-      }],
+    const newHistory = {
+      type: ActionTypes.Delete,
+      changes: [ls.captions[ls.selected_caption_i as number],]
+    }
 
+    this.setState({
       selected_caption_i: null,
       ...this.deleteCaptionObject(ls.selected_caption_i),
 
-    }, this.updateHistoryCursor)
+    }, () => this.updateHistory(newHistory))
   }
 
   captionSelectionToggle(index: number) {
@@ -262,21 +257,21 @@ export default class Studio extends React.Component<{}, State> {
     })
   }
 
-  updateHistoryCursor() {
+  updateHistory(newAction: ActionHistory) {
     const hc = this.state.historyCursor
     let lastHistory = this.state.capsHistory
-
+    
     // [0, 1, 2, 3], c:2 => [0, 1, 2]
-    if (hc + 1 !== lastHistory.length - 1) // if it didn't point on the last history before updating history
-      lastHistory = lastHistory.slice(0, hc + 2)
+    if (hc !== lastHistory.length - 1) // if it didn't point on the last history before updating history
+      lastHistory = lastHistory.slice(0, hc + 1)
 
     // [1, 2, 3, 4] => [2, 3, 4]
     else if (lastHistory.length >= MAX_HISTORY)
-      lastHistory.splice(0, 1)
+      lastHistory = lastHistory.slice(1)
 
     this.setState({
-      capsHistory: lastHistory,
-      historyCursor: lastHistory.length - 1
+      capsHistory: [...lastHistory, newAction],
+      historyCursor: lastHistory.length
     })
   }
 

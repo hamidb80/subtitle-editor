@@ -8,10 +8,14 @@ type State = {
   shortcuts: {
     keys: string[],
     clue: string,
-  }[]
+  }[],
+  features: {
+    imageSrc: string,
+    details: string
+  }[],
 }
 export default class Help extends React.Component<{}, State> {
-  state = {
+  state: State = {
     shortcuts: [
       {
         keys: ['ctrl', 'space'],
@@ -56,7 +60,7 @@ export default class Help extends React.Component<{}, State> {
         clue: 'shoot start of selected caption forward/backward',
       },
       {
-        keys: ['ctrl','home/end'],
+        keys: ['ctrl', 'home/end'],
         clue: 'shoot start/end of selected caption to the current time',
       },
       {
@@ -81,6 +85,18 @@ export default class Help extends React.Component<{}, State> {
         keys: ['ctrl', 's'],
         clue: 'save subtitle',
       },
+    ],
+
+    features: [
+      {
+        imageSrc: TCtrolImg,
+        details: `you can change timestamp manually by double clicking on it
+        changes will be applied after clicking out of the timestamp`
+      },
+      {
+        imageSrc: StickTimeImg,
+        details: "use stick time button to stick start/end of selected caption to the timeline cursor"
+      }
     ]
   }
 
@@ -91,22 +107,10 @@ export default class Help extends React.Component<{}, State> {
 
         <h3> <a href="#features">#features</a> </h3>
         <ul id="features">
-
-          <li>
-            <img src={TCtrolImg} height="180" className="d-block" alt="" />
-            <span>
-              you can change timestamp manually by double clicking on it
-              changes will be applied after clicking out of the timestamp
-            </span>
-          </li>
-
-          <li>
-            <img src={StickTimeImg} height="180" className="d-block" alt="" />
-            <span>
-              use stick time button to stick start/end of selected caption to the timeline cursor
-            </span>
-          </li>
-
+          {this.state.features.map(f => <li>
+            <img src={f.imageSrc} className="d-block" alt="" />
+            <span> {f.details} </span>
+          </li>)}
         </ul>
 
         <h3> <a href="#shortcuts">#shortcuts</a> </h3>
