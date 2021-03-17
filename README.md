@@ -7,12 +7,11 @@ you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
 ## TODOs:
 * [ ] add video resize option
 * [ ] fix large video timeline capacity problem
-* [ ] add more help to help page
 
 ## features
 * shortcuts/mouse
-* nice ux/ui
 * undo/redo
+* nice ux/ui [native components - no external UI libraries]
 
 ## commands:
 `npm install yarn`

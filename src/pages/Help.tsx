@@ -3,6 +3,7 @@ import './help.sass'
 
 import TCtrolImg from '../assets/TimeControll.jpg'
 import StickTimeImg from '../assets/stickTime.png'
+import TextAlignImg from '../assets/textAlign.png'
 
 type State = {
   shortcuts: {
@@ -96,6 +97,10 @@ export default class Help extends React.Component<{}, State> {
       {
         imageSrc: StickTimeImg,
         details: "use stick time button to stick start/end of selected caption to the timeline cursor"
+      },
+      {
+        imageSrc: TextAlignImg,
+        details: "you can change text align according to the language you write in"
       }
     ]
   }
