@@ -114,15 +114,7 @@ export default class Studio extends React.Component<{}, State> {
       kv.preventDefault()
       this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MINOR)
     })
-    hotkeys('home', kv => {
-      kv.preventDefault()
-      this.VideoPlayerRef.current?.setTime(0)
-    })
-    hotkeys('end', kv => {
-      kv.preventDefault()
-      this.VideoPlayerRef.current?.setTime(this.state.totalTime)
-    })
-
+  
     hotkeys('ctrl+enter', () => this.addCaptionUIHandler())
 
     hotkeys('ctrl+down', kv => {

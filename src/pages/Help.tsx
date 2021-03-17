@@ -31,10 +31,6 @@ export default class Help extends React.Component<{}, State> {
         clue: 'go forward/backward in timeline [big step]',
       },
       {
-        keys: ['home/end'],
-        clue: 'shoot time to start/end of the video',
-      },
-      {
         keys: ['ctrl', '+/-'],
         clue: 'zoom in/out in timeline',
       },
