@@ -4,6 +4,7 @@ import hotkeys from 'hotkeys-js'
 import { CircleBtn } from "../form"
 import { Caption } from "../../utils/caption"
 import { second2timestamp } from "../../utils/timestamp"
+import Konva from "konva"
 
 import {
   MAX_SCALE, MAX_CANVAS_SIZE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET
@@ -28,7 +29,8 @@ type State = {
   scale: number
 }
 export default class SubtitleTimeline extends React.Component<Props, State> {
-  canvasRef: React.RefObject<HTMLCanvasElement>
+  canvasRef: React.RefObject<HTMLDivElement>
+  group: Konva.Group | null
 
   constructor(props: any) {
     super(props)
@@ -40,10 +42,13 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
     }
 
     this.canvasRef = React.createRef()
+    this.group = null
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
     this.drawTimeRuler = this.drawTimeRuler.bind(this)
+    this.initTimeRuler = this.initTimeRuler.bind(this)
+    this.updateRullerPosition = this.updateRullerPosition.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
 
     this.zoom = this.zoom.bind(this)
@@ -78,32 +83,56 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   setTimeFromPixels(timePerPixels: number) {
-    this.props.onSelectNewTime(timePerPixels / this.state.scale)
+    this.props.onSelectNewTime(this.props.currentTime - TIMELINE_CURSOR_OFFSET + timePerPixels / this.state.scale)
+  }
+
+  initTimeRuler() {
+    let
+      stage = new Konva.Stage({
+        container: this.canvasRef.current as HTMLDivElement,
+        width: window.innerWidth,
+        height: 32,
+      }),
+      layer = new Konva.Layer()
+
+
+    this.group = new Konva.Group()
+    layer.add(this.group)
+    stage.add(layer)
+
+    this.drawTimeRuler()
   }
 
   drawTimeRuler() {
-    const ctx = this.canvasRef.current?.getContext('2d')
-    if (ctx)
-      for (let second = 0; second < this.props.duration; second++) {
-        const time = second2timestamp(second, "minute")
+    this.group?.destroyChildren()
 
-        if (this.state.scale < 20) {
-          if (second % 5 === 0)
-            ctx.fillText(time, this.state.scale * second - 12, 20)
-        }
-        else if (this.state.scale < 30) {
-          if (second % 3 === 0)
-            ctx.fillText(time, this.state.scale * second - 12, 20)
-        }
-        else if (this.state.scale < 40) {
-          ctx.fillText(time, this.state.scale * second - 12, second % 2 === 1 ? 12 : 20)
-        }
-        else {
-          ctx.fillText(time, this.state.scale * second - 12, 20)
-        }
+    for (let second = 0; second < this.props.duration; second++) {
+      const
+        time = second2timestamp(second, "minute"),
+        common = { text: time, x: this.state.scale * second - 12, y: 4, fontSize: 13, fontFamily: "digital" }
 
-        ctx.fillRect(this.state.scale * second, 24, 2, 10)
+        
+      if (this.state.scale < 20) {
+        if (second % 5 === 0)
+          this.group?.add(new Konva.Text(common))
       }
+      else if (this.state.scale < 30) {
+        if (second % 3 === 0)
+          this.group?.add(new Konva.Text(common))
+      }
+      else if (this.state.scale < 40) {
+        this.group?.add(new Konva.Text({ ...common, y: second % 2 === 1 ? 2 : 8 }))
+      }
+      else {
+        this.group?.add(new Konva.Text(common))
+      }
+
+      this.group?.add(new Konva.Rect({ x: this.state.scale * second, y: 22, width: 2, height: 10, fill: "black" }))
+    }
+  }
+
+  updateRullerPosition() {
+    this.group?.x(-(this.props.currentTime - TIMELINE_CURSOR_OFFSET) * this.state.scale)
   }
 
   //  ------------------- component API ----------------------
@@ -137,18 +166,21 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
     else if (this.state.lastScale !== this.state.scale) {
       this.setState({ lastScale: this.state.scale }, this.drawTimeRuler)
     }
+
+    if (this.group === null)
+      this.initTimeRuler()
   }
 
   render() {
     if (this.state.error)
-      return (<div className="center badge-danger">
-        sorry the video length is too large - web browsers have limit for canvas size
-      </div>)
+      return <div className="center badge-danger"> an error acuured </div>
 
     const
-      scale = this.state.scale,
       duration = this.props.duration,
-      percent = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100
+      progress = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100,
+      scale = this.state.scale
+
+    this.updateRullerPosition()
 
     return (
       <div className={"advanced-timeline " + this.props.className}>
@@ -179,19 +211,17 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
             marginLeft: `${TIMELINE_CURSOR_OFFSET * scale}px`,
           }}></div>
 
-          <div className="mover" style={{
-            transform: `translateX(${percent}%)`,
-            width: `${duration * scale}px`,
-          }}>
+          <div className="mover">
 
             <div className="time-ruler-wrapper">
-              <canvas className="time-ruler" ref={this.canvasRef}
-                width={duration * scale} height="32"></canvas>
-
+              <div className="time-ruler-konva" ref={this.canvasRef}></div>
               <UserCursorElem onTimePick={this.setTimeFromPixels} />
             </div>
 
-            <div className="captions-side">
+            <div className="captions-side" style={{
+              transform: `translateX(${progress}%)`,
+              width: `${duration * scale}px`,
+            }}>
               {this.props.captions.map((c: Caption, i) =>
                 captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
               }
@@ -206,7 +236,10 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 }
 
 // captions
-function captionItem(c: Caption, index: number, selected_i: null | number, clickFunc: (index: number) => void, scale: number): JSX.Element {
+function captionItem(
+  c: Caption, index: number, selected_i: null | number,
+  clickFunc: (index: number) => void, scale: number
+): JSX.Element {
   const width = c.end - c.start
 
   return (

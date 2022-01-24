@@ -38,11 +38,6 @@
             pointer-events: none
             z-index: 3
 
-        .mover
-            transition: 0.2s
-            will-change: transform
-            transition-timing-function: linear
-
         .captions-side, .time-ruler-wrapper
             width: 100%
             overflow: hidden
@@ -52,12 +47,18 @@
             display: grid
             border-bottom: 1px solid $gray-800
 
+            .time-ruler-konva
+                height: 32px
+                pointer-events: none
+                transform: translateY(-32px)
+
             .user-time-cursor-wrapper, .time-ruler
                 grid-row: 1
                 grid-column: 1
 
             .user-time-cursor-wrapper
                 z-index: 2
+                height: 32px
                 cursor: pointer
 
                 .user-time-cursor

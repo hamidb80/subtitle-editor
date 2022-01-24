@@ -6,7 +6,6 @@ you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
 
 ## TODOs:
 * [ ] add video resize option
-* [ ] fix large video timeline capacity problem
 
 ## features
 * shortcuts/mouse

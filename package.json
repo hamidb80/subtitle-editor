@@ -15,6 +15,7 @@
     "bootstrap": "^4.5.3",
     "hotkeys-js": "^3.8.2",
     "js-file-download": "^0.4.12",
+    "konva": "^8.3.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-router-dom": "^5.2.0",

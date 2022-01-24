@@ -1,6 +1,7 @@
 import React, { SyntheticEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
+import Konva from "konva"
 
 import appStates from "../utils/states"
 import { simpleSort } from "../utils/funcs"
