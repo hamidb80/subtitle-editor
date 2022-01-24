@@ -39,7 +39,7 @@ export default class Help extends React.Component<{}, State> {
         clue: 'zoom in/out web page',
       },
       {
-        keys: ['shift', 'pageup/pagedown'],
+        keys: ['ctrl', '6/7'],
         clue: 'go to [start of last caption]/[end of next caption]',
       },
       {
@@ -60,7 +60,7 @@ export default class Help extends React.Component<{}, State> {
         clue: 'shoot start of selected caption forward/backward',
       },
       {
-        keys: ['ctrl', 'home/end'],
+        keys: ['ctrl', '8/9'],
         clue: 'shoot start/end of selected caption to the current time',
       },
       {
@@ -72,8 +72,8 @@ export default class Help extends React.Component<{}, State> {
         clue: 'delete selected caption',
       },
       {
-        keys: ['ctrl', '9/0'],
-        clue: 'set text direction in caption editor input [left toright]/[right to left]',
+        keys: ['ctrl', '0'],
+        clue: 'toggle text direction in caption editor input [left to right]/[right to left]',
       },
       {
         keys: ['ctrl', 'z/y'],

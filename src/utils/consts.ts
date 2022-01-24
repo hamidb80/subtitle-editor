@@ -11,7 +11,6 @@ export const
   TIMELINE_CURSOR_OFFSET = 4, // per seconds
   
   SHOOT_ZOOM  = 10,
-  MAX_CANVAS_SIZE = 32767,
   DEFAULT_SCALE = 30,
   MAX_SCALE = 100
 

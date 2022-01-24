@@ -7,7 +7,7 @@ import { second2timestamp } from "../../utils/timestamp"
 import Konva from "konva"
 
 import {
-  MAX_SCALE, MAX_CANVAS_SIZE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET
+  MAX_SCALE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET
 } from "../../utils/consts"
 
 import "./subtitle-timeline.sass"
@@ -70,7 +70,7 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       this.setState({ scale: new_val })
   }
   isZoomInValid(val: number): boolean {
-    return (val <= MAX_SCALE) && (val * this.props.duration <= MAX_CANVAS_SIZE)
+    return (val <= MAX_SCALE)
   }
   isZoomOutValid(val: number) {
     return val > 0
@@ -153,8 +153,6 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 
     if (this.state.scale === 0) {
       let currentScale = DEFAULT_SCALE
-      while (currentScale * this.props.duration > MAX_CANVAS_SIZE)
-        currentScale -= SHOOT_ZOOM
 
       if (currentScale <= 0)
         this.setState({ error: true, scale: -1 })

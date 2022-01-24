@@ -1,7 +1,6 @@
 import React, { SyntheticEvent } from 'react'
 import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
-import Konva from "konva"
 
 import appStates from "../utils/states"
 import { simpleSort } from "../utils/funcs"
@@ -99,11 +98,11 @@ export default class Studio extends React.Component<{}, State> {
         this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MAJOR)
       }
     })
-    hotkeys('shift+pageup', kv => {
+    hotkeys('ctrl+6', kv => {
       kv.preventDefault()
       this.goToLastStart()
     })
-    hotkeys('shift+pagedown', kv => {
+    hotkeys('ctrl+7', kv => {
       kv.preventDefault()
       this.goToNextEnd()
     })
