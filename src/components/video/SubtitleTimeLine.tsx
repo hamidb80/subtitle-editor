@@ -109,9 +109,8 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
     for (let second = 0; second < this.props.duration; second++) {
       const
         time = second2timestamp(second, "minute"),
-        common = { text: time, x: this.state.scale * second - 12, y: 4, fontSize: 13, fontFamily: "digital" }
+        common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" }
 
-        
       if (this.state.scale < 20) {
         if (second % 5 === 0)
           this.group?.add(new Konva.Text(common))
@@ -121,7 +120,8 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
           this.group?.add(new Konva.Text(common))
       }
       else if (this.state.scale < 40) {
-        this.group?.add(new Konva.Text({ ...common, y: second % 2 === 1 ? 2 : 8 }))
+        if (second % 2 === 0)
+          this.group?.add(new Konva.Text(common))
       }
       else {
         this.group?.add(new Konva.Text(common))
