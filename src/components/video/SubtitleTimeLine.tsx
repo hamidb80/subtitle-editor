@@ -23,14 +23,34 @@ type Props = {
   selectedCaption_i: number | null
   onCaptionSelected: (captionIndex: number) => void
 }
+type TimeRange = [number, number]
 type State = {
   error: boolean
   lastScale: number
   scale: number
 }
+
+const
+  REDNER_AFTER = 3,
+  REDNER_BEFORE = 1
+
+function getRange(currentTime: number, scale: number, boxSize: number, max: number): TimeRange {
+  let boxCapacity = boxSize / scale
+
+  return [
+    Math.max(currentTime - boxCapacity * REDNER_BEFORE, 0),
+    Math.min(currentTime + boxCapacity * REDNER_AFTER, max)
+  ]
+}
+
+function inRange(n: number, r: TimeRange): boolean {
+  return (n >= r[0]) && (n <= r[1])
+}
+
 export default class SubtitleTimeline extends React.Component<Props, State> {
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
+  renderedRange: TimeRange
 
   constructor(props: any) {
     super(props)
@@ -43,12 +63,15 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 
     this.canvasRef = React.createRef()
     this.group = null
+    this.renderedRange = [-1, -1]
+
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
     this.drawTimeRuler = this.drawTimeRuler.bind(this)
     this.initTimeRuler = this.initTimeRuler.bind(this)
-    this.updateRullerPosition = this.updateRullerPosition.bind(this)
+    this.updateRulerPosition = this.updateRulerPosition.bind(this)
+    this.updateRuler = this.updateRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
 
     this.zoom = this.zoom.bind(this)
@@ -100,26 +123,32 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
     layer.add(this.group)
     stage.add(layer)
 
-    this.drawTimeRuler()
+    this.updateRuler()
   }
 
-  drawTimeRuler() {
+  updateRuler() {
+    let t = getRange(this.props.currentTime, this.state.scale, window.innerWidth, this.props.duration)
+    this.drawTimeRuler([Math.floor(t[0]), Math.ceil(t[1])])
+  }
+
+  drawTimeRuler(tr: TimeRange) {
     this.group?.destroyChildren()
 
-    for (let second = 0; second < this.props.duration; second++) {
+    for (let second = tr[0]; second <= tr[1]; second++) {
       const
         time = second2timestamp(second, "minute"),
-        common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" }
+        common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" },
+        s = this.state.scale
 
-      if (this.state.scale < 20) {
+      if (s < 20) {
         if (second % 5 === 0)
           this.group?.add(new Konva.Text(common))
       }
-      else if (this.state.scale < 30) {
+      else if (s < 30) {
         if (second % 3 === 0)
           this.group?.add(new Konva.Text(common))
       }
-      else if (this.state.scale < 40) {
+      else if (s < 40) {
         if (second % 2 === 0)
           this.group?.add(new Konva.Text(common))
       }
@@ -127,12 +156,26 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
         this.group?.add(new Konva.Text(common))
       }
 
-      this.group?.add(new Konva.Rect({ x: this.state.scale * second, y: 22, width: 2, height: 10, fill: "black" }))
+      this.group?.add(new Konva.Rect({ x: s * second, y: 22, width: 2, height: 10, fill: "black" }))
     }
+
+    this.renderedRange = tr
   }
 
-  updateRullerPosition() {
-    this.group?.x(-(this.props.currentTime - TIMELINE_CURSOR_OFFSET) * this.state.scale)
+  updateRulerPosition() {
+    let
+      ct = this.props.currentTime,
+      s = this.state.scale,
+      ahead = window.innerWidth / s
+
+    let inTimeRange =
+      inRange(Math.max(ct - TIMELINE_CURSOR_OFFSET, 0), this.renderedRange) &&
+      inRange(Math.min(ct + ahead, this.props.duration), this.renderedRange)
+
+    if (!inTimeRange) 
+      this.updateRuler()
+
+    this.group?.x(-(ct - TIMELINE_CURSOR_OFFSET) * s)
   }
 
   //  ------------------- component API ----------------------
@@ -162,7 +205,7 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 
     // to prevent useless rerender
     else if (this.state.lastScale !== this.state.scale) {
-      this.setState({ lastScale: this.state.scale }, this.drawTimeRuler)
+      this.setState({ lastScale: this.state.scale }, this.updateRuler)
     }
 
     if (this.group === null)
@@ -178,7 +221,7 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       progress = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100,
       scale = this.state.scale
 
-    this.updateRullerPosition()
+    this.updateRulerPosition()
 
     return (
       <div className={"advanced-timeline " + this.props.className}>
