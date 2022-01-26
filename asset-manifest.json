@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/subtitle-edtior/static/css/main.304f99f8.chunk.css",
-    "main.js": "/subtitle-edtior/static/js/main.1b4bc2d3.chunk.js",
-    "main.js.map": "/subtitle-edtior/static/js/main.1b4bc2d3.chunk.js.map",
+    "main.js": "/subtitle-edtior/static/js/main.db05a81e.chunk.js",
+    "main.js.map": "/subtitle-edtior/static/js/main.db05a81e.chunk.js.map",
     "runtime-main.js": "/subtitle-edtior/static/js/runtime-main.06816e72.js",
     "runtime-main.js.map": "/subtitle-edtior/static/js/runtime-main.06816e72.js.map",
     "static/js/2.d8b32133.chunk.js": "/subtitle-edtior/static/js/2.d8b32133.chunk.js",
@@ -19,6 +19,6 @@
     "static/js/runtime-main.06816e72.js",
     "static/js/2.d8b32133.chunk.js",
     "static/css/main.304f99f8.chunk.css",
-    "static/js/main.1b4bc2d3.chunk.js"
+    "static/js/main.db05a81e.chunk.js"
   ]
 }
