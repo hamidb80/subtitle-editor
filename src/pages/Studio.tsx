@@ -114,7 +114,7 @@ export default class Studio extends React.Component<{}, State> {
       kv.preventDefault()
       this.VideoPlayerRef.current?.shootTime(+SHOOT_TIME_MINOR)
     })
-  
+
     hotkeys('ctrl+enter', () => this.addCaptionUIHandler())
 
     hotkeys('ctrl+down', kv => {
@@ -194,22 +194,23 @@ export default class Studio extends React.Component<{}, State> {
 
   addCaptionUIHandler() {
     const
-      t = this.state.currentTime,
+      ct = this.state.currentTime,
+      currentCap = this.state.captions.find(c => (ct >= c.start) && (ct <= c.end)),
+      t = currentCap && (currentCap.end - ct < 0.6) ? currentCap.end + 0.001 : ct,
       newCap = {
         start: t,
         end: t + 1,
         content: "New Caption",
         hash: uuid(),
+      },
+      newHistory = {
+        type: ActionTypes.Create,
+        changes: [newCap]
       }
 
-    const newHistory = {
-      type: ActionTypes.Create,
-      changes: [newCap,]
-    }
     this.setState({
       ...this.addCaptionObject(newCap),
       selected_caption_i: this.state.captions.length
-
     }, () => this.updateHistory(newHistory))
   }
 
@@ -352,7 +353,7 @@ export default class Studio extends React.Component<{}, State> {
 
   saveFile() {
     this.state.captions.sort(captionsCompare)
-    fileDownload(export2srt(this.state.captions), 'subtitle.srt');
+    fileDownload(export2srt(this.state.captions), 'subtitle.srt')
   }
 
   render() {

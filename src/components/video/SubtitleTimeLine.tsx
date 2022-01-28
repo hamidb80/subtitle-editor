@@ -172,7 +172,7 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       inRange(Math.max(ct - TIMELINE_CURSOR_OFFSET, 0), this.renderedRange) &&
       inRange(Math.min(ct + ahead, this.props.duration), this.renderedRange)
 
-    if (!inTimeRange) 
+    if (!inTimeRange)
       this.updateRuler()
 
     this.group?.x(-(ct - TIMELINE_CURSOR_OFFSET) * s)
