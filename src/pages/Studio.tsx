@@ -1,4 +1,5 @@
 import React, { SyntheticEvent } from 'react'
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import hotkeys from 'hotkeys-js'
 import { v4 as uuid } from "uuid"
 
@@ -21,6 +22,8 @@ type ActionHistory = {
 
 type State = {
   videoUrl: string
+  videoHeight: number
+  acc: number
 
   currentTime: number
   totalTime: number
@@ -40,6 +43,8 @@ export default class Studio extends React.Component<{}, State> {
 
     this.state = {
       videoUrl: appStates.videoUrl.getData(),
+      videoHeight: 400,
+      acc: 0,
 
       currentTime: 0,
       totalTime: 0,
@@ -56,6 +61,8 @@ export default class Studio extends React.Component<{}, State> {
     // --- bind methods ---
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
     this.onVideoError = this.onVideoError.bind(this)
+    this.handleSeparatorDrag = this.handleSeparatorDrag.bind(this)
+    this.handleSeparatorStop = this.handleSeparatorStop.bind(this)
 
     this.addCaptionUIHandler = this.addCaptionUIHandler.bind(this)
     this.addCaptionObject = this.addCaptionObject.bind(this)
@@ -356,6 +363,16 @@ export default class Studio extends React.Component<{}, State> {
     fileDownload(export2srt(this.state.captions), 'subtitle.srt')
   }
 
+  handleSeparatorStop(e: DraggableEvent, dd: DraggableData) {
+    this.setState({
+      videoHeight: this.state.videoHeight + this.state.acc,
+      acc: 0,
+    })
+  }
+  handleSeparatorDrag(e: DraggableEvent, dd: DraggableData) {
+    this.setState({ acc: this.state.acc + dd.deltaY })
+  }
+
   render() {
     const
       caps = this.state.captions,
@@ -371,9 +388,19 @@ export default class Studio extends React.Component<{}, State> {
             videoUrl={this.state.videoUrl}
             onTimeUpdate={this.onTimeUpdate}
             onError={this.onVideoError}
+            height={this.state.videoHeight}
             onDurationChanges={du => this.setState({ totalTime: du })}
           />
         </div>
+
+        <Draggable
+          axis="y"
+          position={{ x: 0, y: 0 }}
+          onDrag={this.handleSeparatorDrag}
+          onStop={this.handleSeparatorStop}
+        >
+          <div className="separator mt-3"></div>
+        </Draggable>
 
         <CaptionView
           currentTime={this.state.currentTime}
