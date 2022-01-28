@@ -4,9 +4,6 @@
 ## demo
 you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
 
-## TODOs:
-* [ ] add video resize option
-
 ## features
 * shortcuts/mouse
 * undo/redo
