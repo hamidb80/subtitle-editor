@@ -10,6 +10,7 @@ type Props = {
   onTimeUpdate?: (timePerSecond: number) => void
   onError?: (e: SyntheticEvent) => void
   onDurationChanges: (duration: number) => void
+  height?: number
 }
 export default class VideoPlayer extends React.Component<Props> {
   videoElementRef: React.RefObject<HTMLVideoElement>
@@ -120,10 +121,10 @@ export default class VideoPlayer extends React.Component<Props> {
       <div className={"video-player " + (this.state.showVideoControll ? 'show ' : '')}
         onMouseMove={this.onMouseMove} onMouseOut={this.disableVideoControllers}>
 
-        <div className="video-screen"
-          onContextMenu={e => e.preventDefault()}>
+        <div className="video-screen" onContextMenu={e => e.preventDefault()}>
 
           <video
+            height={this.props.height}
             onTimeUpdate={this.onTimeUpdate}
             ref={this.videoElementRef}
             src={this.props.videoUrl}
@@ -133,7 +134,7 @@ export default class VideoPlayer extends React.Component<Props> {
             onError={e => this.onError(e)}
           ></video>
 
-          <div className={"video-state-controller"}>
+          <div className="video-state-controller">
             <div className="part"></div>
 
             <div className="part action-btn-group">
@@ -147,7 +148,7 @@ export default class VideoPlayer extends React.Component<Props> {
           </div>
 
         </div>
-      </div>
+      </div >
     )
   }
 }

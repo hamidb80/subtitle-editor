@@ -63,7 +63,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
 
     hotkeys('ctrl+0', kv => {
       kv.preventDefault()
-      this.setState({is_ltr: !this.state.is_ltr})
+      this.setState({ is_ltr: !this.state.is_ltr })
     })
 
     hotkeys('alt+right', () => {
@@ -171,12 +171,11 @@ export default class CaptionEditor extends React.Component<Props, State> {
         <div>
           <CircleBtn
             disabled={cap === null}
-            onClick={() => this.setState(ls => ({is_ltr: !ls.is_ltr}))}
+            onClick={() => this.setState(ls => ({ is_ltr: !ls.is_ltr }))}
             iconClassName={"fas fa-align-" + (this.state.is_ltr ? "left" : "right")}
           />
           <input type="text" ref={this.inputRef} disabled={cap === null}
-            className={"form-control caption-editor " + (cap ? '' : 'invisible') +
-              (this.state.is_ltr ? "ltr" : "rtl")}
+            className={"form-control caption-editor " + (this.state.is_ltr ? "ltr" : "rtl")}
             value={this.state.newCaption?.content || ""}
             onChange={this.onCaptionContentChanged}
             onBlur={this.handleCaptionChange} />
