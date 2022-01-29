@@ -113,7 +113,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
 
     // controll the caption start/end time 
     if (startChange === null)
-      cap.start = this.props.currentTime
+      cap.start = this.props.currentTime + 0.001
     else if (this.isCapInTimeRange(cap.start + startChange))
       cap.start += startChange
 
