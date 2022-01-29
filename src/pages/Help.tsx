@@ -4,6 +4,8 @@ import './help.sass'
 import TCtrolImg from '../assets/TimeControll.jpg'
 import StickTimeImg from '../assets/stickTime.png'
 import TextAlignImg from '../assets/textAlign.png'
+import addNewCap2Last from '../assets/addNewCaptionToEndOfLastOne.jpg'
+import resizeVideo from '../assets/resizeVideo.png'
 
 type State = {
   shortcuts: {
@@ -98,6 +100,14 @@ export default class Help extends React.Component<{}, State> {
       {
         imageSrc: TextAlignImg,
         details: "you can change text align according to the language you write in"
+      },
+      {
+        imageSrc: addNewCap2Last,
+        details: "if you add a new caption to the last 600ms of the last caption, the new caption will be inserted after last one"
+      },
+      {
+        imageSrc: resizeVideo,
+        details: "you can resize video by draging the thin line after video and before caption view"
       }
     ]
   }
