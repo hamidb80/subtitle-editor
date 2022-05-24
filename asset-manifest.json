@@ -1,26 +1,26 @@
 {
   "files": {
-    "main.css": "/subtitle-edtior/static/css/main.02a657af.chunk.css",
-    "main.js": "/subtitle-edtior/static/js/main.2d91408e.chunk.js",
-    "main.js.map": "/subtitle-edtior/static/js/main.2d91408e.chunk.js.map",
-    "runtime-main.js": "/subtitle-edtior/static/js/runtime-main.06816e72.js",
-    "runtime-main.js.map": "/subtitle-edtior/static/js/runtime-main.06816e72.js.map",
-    "static/js/2.52ec228e.chunk.js": "/subtitle-edtior/static/js/2.52ec228e.chunk.js",
-    "static/js/2.52ec228e.chunk.js.map": "/subtitle-edtior/static/js/2.52ec228e.chunk.js.map",
-    "index.html": "/subtitle-edtior/index.html",
-    "static/css/main.02a657af.chunk.css.map": "/subtitle-edtior/static/css/main.02a657af.chunk.css.map",
-    "static/js/2.52ec228e.chunk.js.LICENSE.txt": "/subtitle-edtior/static/js/2.52ec228e.chunk.js.LICENSE.txt",
-    "static/media/TimeControll.ba1b4269.jpg": "/subtitle-edtior/static/media/TimeControll.ba1b4269.jpg",
-    "static/media/addNewCaptionToEndOfLastOne.abf13990.jpg": "/subtitle-edtior/static/media/addNewCaptionToEndOfLastOne.abf13990.jpg",
-    "static/media/global.sass": "/subtitle-edtior/static/media/digital.93911ab1.ttf",
-    "static/media/resizeVideo.342db664.png": "/subtitle-edtior/static/media/resizeVideo.342db664.png",
-    "static/media/stickTime.ee5d02c9.png": "/subtitle-edtior/static/media/stickTime.ee5d02c9.png",
-    "static/media/textAlign.5bd9ab79.png": "/subtitle-edtior/static/media/textAlign.5bd9ab79.png"
+    "main.css": "/subtitle-editor/static/css/main.638e8814.chunk.css",
+    "main.js": "/subtitle-editor/static/js/main.cf948c66.chunk.js",
+    "main.js.map": "/subtitle-editor/static/js/main.cf948c66.chunk.js.map",
+    "runtime-main.js": "/subtitle-editor/static/js/runtime-main.d953f68b.js",
+    "runtime-main.js.map": "/subtitle-editor/static/js/runtime-main.d953f68b.js.map",
+    "static/js/2.cbdce9ed.chunk.js": "/subtitle-editor/static/js/2.cbdce9ed.chunk.js",
+    "static/js/2.cbdce9ed.chunk.js.map": "/subtitle-editor/static/js/2.cbdce9ed.chunk.js.map",
+    "index.html": "/subtitle-editor/index.html",
+    "static/css/main.638e8814.chunk.css.map": "/subtitle-editor/static/css/main.638e8814.chunk.css.map",
+    "static/js/2.cbdce9ed.chunk.js.LICENSE.txt": "/subtitle-editor/static/js/2.cbdce9ed.chunk.js.LICENSE.txt",
+    "static/media/TimeControll.ba1b4269.jpg": "/subtitle-editor/static/media/TimeControll.ba1b4269.jpg",
+    "static/media/addNewCaptionToEndOfLastOne.abf13990.jpg": "/subtitle-editor/static/media/addNewCaptionToEndOfLastOne.abf13990.jpg",
+    "static/media/global.sass": "/subtitle-editor/static/media/digital.93911ab1.ttf",
+    "static/media/resizeVideo.342db664.png": "/subtitle-editor/static/media/resizeVideo.342db664.png",
+    "static/media/stickTime.ee5d02c9.png": "/subtitle-editor/static/media/stickTime.ee5d02c9.png",
+    "static/media/textAlign.5bd9ab79.png": "/subtitle-editor/static/media/textAlign.5bd9ab79.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.06816e72.js",
-    "static/js/2.52ec228e.chunk.js",
-    "static/css/main.02a657af.chunk.css",
-    "static/js/main.2d91408e.chunk.js"
+    "static/js/runtime-main.d953f68b.js",
+    "static/js/2.cbdce9ed.chunk.js",
+    "static/css/main.638e8814.chunk.css",
+    "static/js/main.cf948c66.chunk.js"
   ]
 }
