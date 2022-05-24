@@ -97,7 +97,7 @@ export default class Intro extends React.Component<{}, State> {
       </div>
 
       <footer className="p-2 w-100 d-flex justify-content-center">
-        <a href="https://github.com/hamidb80/subtitle-edtior/" target="blank"
+        <a href="https://github.com/hamidb80/subtitle-editor/" target="blank"
           className="d-flex align-items-center">
           <span className="fab fa-github github-logo"></span>
           <span className="pb-1 mx-2"> project link on github </span>

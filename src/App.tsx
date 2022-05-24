@@ -9,7 +9,7 @@ import "./global.sass"
 export default class App extends React.Component {
   render() {
     return (<>
-      <Router basename="/subtitle-edtior">
+      <Router basename="/subtitle-editor">
         <Route exact path='/' component={Intro}></Route>
         <Route exact path='/studio' component={Studio}></Route>
         <Route exact path='/help' component={Help}></Route>
