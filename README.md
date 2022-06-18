@@ -2,7 +2,7 @@
 
 
 ## demo
-you can see demo [here](https://hamidb80.github.io/subtitle-edtior/)
+you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
 
 ## features
 * shortcuts/mouse
