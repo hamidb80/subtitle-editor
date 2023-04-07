@@ -14,6 +14,8 @@ import {
 import "./subtitle-timeline.sass"
 
 
+// FIXME unselect caption when user clicked out in empty space 
+
 export default class SubtitleTimeline extends React.Component<
   {
     className?: string
