@@ -32,7 +32,9 @@ export default class SubtitleTimeline extends React.Component<
     lastScale: number
     scale: number
     timeRulers: string[]
-  }>
+    cursorXPos: number
+  }
+>
 {
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
@@ -44,12 +46,12 @@ export default class SubtitleTimeline extends React.Component<
       error: false,
       lastScale: 0,
       scale: 0,
-      timeRulers: [] // array of dataUrl
+      cursorXPos: 0,
+      timeRulers: [], // array of dataUrl
     }
 
     this.canvasRef = React.createRef()
     this.group = null
-
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
@@ -62,6 +64,8 @@ export default class SubtitleTimeline extends React.Component<
     this.zoomOut = this.zoomOut.bind(this)
     this.isZoomInValid = this.isZoomInValid.bind(this)
     this.isZoomOutValid = this.isZoomOutValid.bind(this)
+
+    this.calculateRealOffset = this.calculateRealOffset.bind(this)
   }
 
   // --------------------------- methods ---------------------
@@ -86,6 +90,13 @@ export default class SubtitleTimeline extends React.Component<
   }
   zoomOut() {
     this.zoom(-SHOOT_ZOOM)
+  }
+
+  calculateRealOffset(e: MouseEvent) {
+    const mouseX = e.pageX, // based on the screen
+      PostionOfElem = e.currentTarget.getBoundingClientRect()
+
+    return mouseX - PostionOfElem.left
   }
 
   setTimeFromPixels(timePerPixels: number) {
@@ -223,16 +234,21 @@ export default class SubtitleTimeline extends React.Component<
             marginLeft: `${TIMELINE_CURSOR_OFFSET * scale}px`,
           }}></div>
 
-          <div className="mover">
+          <div className="mover"
+            onMouseMove={e => this.setState({ cursorXPos: this.calculateRealOffset(e) })}
+            onMouseLeave={() => this.setState({ cursorXPos: out })}
+          >
 
-            <div className="time-ruler-konva" ref={this.canvasRef}></div>
+            <div className="konva-instance" ref={this.canvasRef}></div>
 
-            <div className="time-ruler-wrapper">
-              <UserCursorElem onTimePick={this.setTimeFromPixels} />
+            <div className="time-cursor-wrapper">
+              <UserCursorElem
+                posx={this.state.cursorXPos}
+                onclick={(e: MouseEvent) => this.setTimeFromPixels(this.calculateRealOffset(e))} />
             </div>
 
-            <div style={{
-              transform: `translateX(${progress}%) translateY(-30px)`,
+            <div className="inside-timeline" style={{
+              transform: `translateX(${progress}%)`,
               width: `${duration * scale}px`,
               transition: "0.1s linear"
             }}>
@@ -377,29 +393,20 @@ class CaptionItem extends React.Component<{
   }
 }
 
+const out = -10
+
 class UserCursorElem extends React.Component<{
-  onTimePick: (userCursorX: number) => void
+  onclick: (e: MouseEvent) => void
+  posx: number
 }>
 {
-  state = { cursorXPos: 0 }
-
-  calculateRealOffset(e: MouseEvent) {
-    const mouseX = e.pageX, // based on the screen
-      PostionOfElem = e.currentTarget.getBoundingClientRect()
-
-    return mouseX - PostionOfElem.left
-  }
-
   render() {
     return (
       <div className="user-time-cursor-wrapper"
-        onMouseMove={e => this.setState({ cursorXPos: this.calculateRealOffset(e) })}
-        onMouseLeave={() => this.setState({ cursorXPos: 0 })}
-        onClick={e => this.props.onTimePick(this.calculateRealOffset(e))} >
-
+        onClick={this.props.onclick} >
         <div className="user-time-cursor"
-          style={{ transform: `translateX(${this.state.cursorXPos}px)` }}></div>
-      </div >
+          style={{ transform: `translateX(${this.props.posx}px)` }}></div>
+      </div>
     )
   }
 }
