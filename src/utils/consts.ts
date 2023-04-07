@@ -12,5 +12,7 @@ export const
   
   SHOOT_ZOOM  = 10,
   DEFAULT_SCALE = 30,
-  MAX_SCALE = 100
+  MAX_SCALE = 100,
+
+  MAX_CANVAS_SIZE = 32_000 // it's actually 32,767 but I prefer not to go around the limit
 

@@ -7,7 +7,7 @@ import { second2timestamp } from "../../utils/timestamp"
 import Konva from "konva"
 
 import {
-  MAX_SCALE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET
+  MAX_SCALE, DEFAULT_SCALE, SHOOT_ZOOM, TIMELINE_CURSOR_OFFSET, MAX_CANVAS_SIZE
 } from "../../utils/consts"
 
 import "./subtitle-timeline.sass"
@@ -23,34 +23,17 @@ type Props = {
   selectedCaption_i: number | null
   onCaptionSelected: (captionIndex: number) => void
 }
-type TimeRange = [number, number]
+
 type State = {
   error: boolean
   lastScale: number
   scale: number
-}
-
-const
-  REDNER_AFTER = 3,
-  REDNER_BEFORE = 1
-
-function getRange(currentTime: number, scale: number, boxSize: number, max: number): TimeRange {
-  let boxCapacity = boxSize / scale
-
-  return [
-    Math.max(currentTime - boxCapacity * REDNER_BEFORE, 0),
-    Math.min(currentTime + boxCapacity * REDNER_AFTER, max)
-  ]
-}
-
-function inRange(n: number, r: TimeRange): boolean {
-  return (n >= r[0]) && (n <= r[1])
+  timeRulers: string[]
 }
 
 export default class SubtitleTimeline extends React.Component<Props, State> {
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
-  renderedRange: TimeRange
 
   constructor(props: any) {
     super(props)
@@ -59,18 +42,16 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       error: false,
       lastScale: 0,
       scale: 0,
+      timeRulers: [] // array of dataUrl
     }
 
     this.canvasRef = React.createRef()
     this.group = null
-    this.renderedRange = [-1, -1]
 
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
-    this.drawTimeRuler = this.drawTimeRuler.bind(this)
     this.initTimeRuler = this.initTimeRuler.bind(this)
-    this.updateRulerPosition = this.updateRulerPosition.bind(this)
     this.updateRuler = this.updateRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
 
@@ -118,7 +99,6 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       }),
       layer = new Konva.Layer()
 
-
     this.group = new Konva.Group()
     layer.add(this.group)
     stage.add(layer)
@@ -127,55 +107,46 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
   }
 
   updateRuler() {
-    let t = getRange(this.props.currentTime, this.state.scale, window.innerWidth, this.props.duration)
-    this.drawTimeRuler([Math.floor(t[0]), Math.ceil(t[1])])
-  }
+    let
+      cachedTimeRulers: string[] = [],
+      s = this.state.scale,
+      maximumSecondsPerChunk = Math.floor(MAX_CANVAS_SIZE / s),
+      d = this.props.duration,
+      progress = 0
 
-  drawTimeRuler(tr: TimeRange) {
-    this.group?.destroyChildren()
+    while (progress < d) {
+      let limit = Math.min(d, progress + maximumSecondsPerChunk)
 
-    for (let second = tr[0]; second <= tr[1]; second++) {
-      const
-        time = second2timestamp(second, "minute"),
-        common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" },
-        s = this.state.scale
+      for (let second = progress; second <= limit; second++) {
+        const
+          time = second2timestamp(second, "minute"),
+          common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" }
 
-      if (s < 20) {
-        if (second % 5 === 0)
+        if (s < 20) {
+          if (second % 5 === 0)
+            this.group?.add(new Konva.Text(common))
+        }
+        else if (s < 30) {
+          if (second % 3 === 0)
+            this.group?.add(new Konva.Text(common))
+        }
+        else if (s < 40) {
+          if (second % 2 === 0)
+            this.group?.add(new Konva.Text(common))
+        }
+        else {
           this.group?.add(new Konva.Text(common))
-      }
-      else if (s < 30) {
-        if (second % 3 === 0)
-          this.group?.add(new Konva.Text(common))
-      }
-      else if (s < 40) {
-        if (second % 2 === 0)
-          this.group?.add(new Konva.Text(common))
-      }
-      else {
-        this.group?.add(new Konva.Text(common))
+        }
+
+        this.group?.add(new Konva.Rect({ x: s * second, y: 22, width: 2, height: 10, fill: "black" }))
       }
 
-      this.group?.add(new Konva.Rect({ x: s * second, y: 22, width: 2, height: 10, fill: "black" }))
+      cachedTimeRulers.push(this.group?.toDataURL() as string)
+      this.group?.destroyChildren()
+      progress = limit
     }
 
-    this.renderedRange = tr
-  }
-
-  updateRulerPosition() {
-    let
-      ct = this.props.currentTime,
-      s = this.state.scale,
-      ahead = window.innerWidth / s
-
-    let inTimeRange =
-      inRange(Math.max(ct - TIMELINE_CURSOR_OFFSET, 0), this.renderedRange) &&
-      inRange(Math.min(ct + ahead, this.props.duration), this.renderedRange)
-
-    if (!inTimeRange)
-      this.updateRuler()
-
-    this.group?.x(-(ct - TIMELINE_CURSOR_OFFSET) * s)
+    this.setState({ timeRulers: cachedTimeRulers })
   }
 
   //  ------------------- component API ----------------------
@@ -221,8 +192,6 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       progress = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100,
       scale = this.state.scale
 
-    this.updateRulerPosition()
-
     return (
       <div className={"advanced-timeline " + this.props.className}>
 
@@ -254,18 +223,29 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 
           <div className="mover">
 
+            <div className="time-ruler-konva" ref={this.canvasRef}></div>
+
             <div className="time-ruler-wrapper">
-              <div className="time-ruler-konva" ref={this.canvasRef}></div>
               <UserCursorElem onTimePick={this.setTimeFromPixels} />
             </div>
 
-            <div className="captions-side" style={{
-              transform: `translateX(${progress}%)`,
+            <div style={{
+              transform: `translateX(${progress}%) translateY(-30px)`,
               width: `${duration * scale}px`,
+              transition: "0.1s linear"
             }}>
-              {this.props.captions.map((c: Caption, i) =>
-                captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
-              }
+
+              <div className="times" >
+                {this.state.timeRulers.map(dataUrl =>
+                  <img src={dataUrl} />
+                )}
+              </div>
+
+              <div className="captions-side">
+                {this.props.captions.map((c: Caption, i) =>
+                  captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
+                }
+              </div>
             </div>
 
           </div>

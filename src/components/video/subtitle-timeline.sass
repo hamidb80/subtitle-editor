@@ -27,6 +27,9 @@
         border: 1px solid $gray-400
         border-radius: 5px
 
+        .time-ruler-konva
+            display:  none
+
         .current-time-cursor, .mover
             grid-row: 1
             grid-column: 1
@@ -46,12 +49,6 @@
 
         .time-ruler-wrapper
             display: grid
-            border-bottom: 1px solid $gray-800
-
-            .time-ruler-konva
-                height: 32px
-                pointer-events: none
-                transform: translateY(-32px)
 
             .user-time-cursor-wrapper, .time-ruler
                 grid-row: 1
@@ -68,6 +65,9 @@
                     height: 100%
                     will-change: transform
                     border-left: 2px dashed $red
+
+        .times
+            border-bottom: 1px solid $gray-800
 
         .captions-side
             background-color: $gray-100
