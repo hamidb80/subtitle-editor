@@ -11,20 +11,20 @@ import { SHOOT_SUBTITLE_TIME_MAJOR } from "../../utils/consts"
 import './caption-editor.sass'
 
 
-type Props = {
+export default class CaptionEditor extends React.Component<{
   currentTime: number // for stick time button
   totalTime: number // video duration
 
   caption: Caption | null
-  onCaptionChanged: (cOld: Caption, cNew: Caption) => void
-}
-type State = {
+  captionIndex: number
+  onCaptionChanged: (index: number, cNew: Caption) => void
+}, {
   lastCaption: Caption | null, // a copy of props.caption to edit
   newCaption: Caption | null,
 
   is_ltr: boolean
-}
-export default class CaptionEditor extends React.Component<Props, State> {
+}>
+{
   inputRef: React.RefObject<HTMLInputElement>
 
   constructor(props: any) {
@@ -147,7 +147,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
       this.setState({
         lastCaption: { ...newCap },
         newCaption: { ...newCap }
-      }, () => this.props.onCaptionChanged(lastCaption, newCap))
+      }, () => this.props.onCaptionChanged(this.props.captionIndex, newCap))
     }
   }
 

@@ -73,14 +73,13 @@
             background-color: $gray-100
         
             .caption-item
-                display: inline-block
+                display: inline-flex
                 position: absolute
                 height: 32px
-                padding: 6px 0
+                justify-content: space-between
                 color: $white
                 text-shadow: 1px 1px $black
                 background-color: $black
-                border-left: 8px solid $orange
                 border-radius: 4px
                 opacity: 0.8
                 overflow: hidden
@@ -89,10 +88,38 @@
                 transition-duration : 0.2s
                 user-select: none
 
-                span
-                    margin-left: 2px
-                    display: ruby-text
+                .start-pad
+                    background: $orange
+                
+                .end-pad, .start-pad
+                    display: inline-block
+                    height: 100%
+                    width: 6px
 
+                    .inside
+                        height: 100%
+                        width: 6px
+                    
+                .content
+                    width: calc( 100% - 12px )
+                    overflow-wrap: break-word
+
+                    .slide
+                        position: absolute
+                        width: calc( 100% - 12px )
+                        height: 100%
+
+    
                 &:hover, &.selected
                     opacity: 1
                     background-color: $orange
+
+                    .start-pad
+                        background: $black
+
+                &.selected
+                    .content
+                        cursor: move
+
+                    .end-pad, .start-pad
+                        cursor: ew-resize

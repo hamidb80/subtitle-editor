@@ -18,6 +18,7 @@ enum ActionTypes { Delete, Create, Change }
 type ActionHistory = {
   type: ActionTypes
   changes: Caption[]
+  index?: number
 }
 
 type State = {
@@ -221,29 +222,33 @@ export default class Studio extends React.Component<{}, State> {
     }, () => this.updateHistory(newHistory))
   }
 
-  changeCaptionObject(fromCap: Caption, toCap: Caption): object {
-    return {
-      captions: this.state.captions.map(c => c.hash === fromCap.hash ? toCap : c)
-    }
+  changeCaptionObject(index: number, newcap: Caption): object {
+    if (index == this.state.selected_caption_i)
+      return {
+        captions: Object.assign([], this.state.captions, { [index]: { ...newcap, hash: uuid() } })
+      }
+    else
+      return this.state.captions
   }
-  changeCaptionUIHandler(oldCap: Caption, newCap: Caption) {
-    const oldCapIndex = this.state.captions.findIndex(c => c.hash === oldCap.hash)
-    if (oldCapIndex === -1) return // it can happen due to fast repeative user actions
+  changeCaptionUIHandler(index: number, newCap: Caption) {
+    if (index >= this.state.captions.length) return // it can happen due to fast repeative user actions
 
-    const newHistory = {
-      type: ActionTypes.Change,
-      changes: [oldCap, newCap]
-    }
+    const
+      oldCap = this.state.captions[index],
+      newHistory = {
+        type: ActionTypes.Change,
+        index: index,
+        changes: [oldCap, newCap]
+      }
 
     this.setState(
-      this.changeCaptionObject(oldCap, newCap),
+      this.changeCaptionObject(index, newCap),
       () => this.updateHistory(newHistory))
   }
 
   deleteCaptionObject(selected_caption_index: number): object {
     return {
-      captions: this.state.captions.filter(
-        (_, i) => i !== selected_caption_index),
+      captions: this.state.captions.splice(selected_caption_index, 1)
     }
   }
 
@@ -311,18 +316,23 @@ export default class Studio extends React.Component<{}, State> {
       newState = this.addCaptionObject(lastAction.changes[0])
     }
 
+    // FIXME remove and append to the caption array instead of changing it
     else {
-      if (undo)
-        newState = this.changeCaptionObject(lastAction.changes[1], lastAction.changes[0])
-      else // redo
-        newState = this.changeCaptionObject(lastAction.changes[0], lastAction.changes[1])
+      console.assert(lastAction.index != null)
+      let i = lastAction.index ?? -1
+
+      // if (undo){
+      //   newState = this.deleteCaptionObject(i)
+      //   this.addCaptionObject(lastAction.changes[0])
+      // else // redo
+      //   newState = this.changeCaptionObject(i, lastAction.changes[1])
     }
 
-    this.setState({
-      ...newState,
-      selected_caption_i: null,
-      historyCursor: hc + (undo ? -1 : +1),
-    })
+    // this.setState({
+    //   ...newState,
+    //   selected_caption_i: null,
+    //   historyCursor: hc + (undo ? -1 : +1),
+    // })
   }
 
   // -- caption selection
@@ -471,12 +481,14 @@ export default class Studio extends React.Component<{}, State> {
           captions={caps}
           onCaptionSelected={this.captionSelectionToggle}
           selectedCaption_i={selected_ci}
+          onCaptionChanged={this.changeCaptionUIHandler}
         />
 
         <CaptionEditor
           currentTime={this.state.currentTime}
           totalTime={this.state.totalTime}
           caption={selected_ci === null ? null : caps[selected_ci]}
+          captionIndex={selected_ci === null ? -1 : selected_ci}
           onCaptionChanged={this.changeCaptionUIHandler}
         />
 

@@ -1,4 +1,5 @@
 import React, { MouseEvent } from 'react'
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import hotkeys from 'hotkeys-js'
 
 import { CircleBtn } from "../form"
@@ -12,26 +13,27 @@ import {
 
 import "./subtitle-timeline.sass"
 
-type Props = {
-  className?: string
 
-  duration: number
-  currentTime: number
-  onSelectNewTime: (newTime: number) => void
+export default class SubtitleTimeline extends React.Component<
+  {
+    className?: string
 
-  captions: Caption[]
-  selectedCaption_i: number | null
-  onCaptionSelected: (captionIndex: number) => void
-}
+    duration: number
+    currentTime: number
+    onSelectNewTime: (newTime: number) => void
 
-type State = {
-  error: boolean
-  lastScale: number
-  scale: number
-  timeRulers: string[]
-}
-
-export default class SubtitleTimeline extends React.Component<Props, State> {
+    captions: Caption[]
+    selectedCaption_i: number | null
+    onCaptionSelected: (captionIndex: number) => void
+    onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+  },
+  {
+    error: boolean
+    lastScale: number
+    scale: number
+    timeRulers: string[]
+  }>
+{
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
 
@@ -243,7 +245,15 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
 
               <div className="captions-side">
                 {this.props.captions.map((c: Caption, i) =>
-                  captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
+                  <CaptionItem
+                    cap={c}
+                    index={i}
+                    selected_i={this.props.selectedCaption_i ?? -1}
+                    clickFunc={this.captionSelectionHandler}
+                    onCaptionChanged={this.props.onCaptionChanged}
+                    scale={scale}
+                  />
+                )
                 }
               </div>
             </div>
@@ -256,30 +266,121 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
   }
 }
 
-// captions
-function captionItem(
-  c: Caption, index: number, selected_i: null | number,
-  clickFunc: (index: number) => void, scale: number
-): JSX.Element {
-  const width = c.end - c.start
+class CaptionItem extends React.Component<{
+  cap: Caption
+  index: number
+  selected_i: number
+  clickFunc: (index: number) => void
+  onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+  scale: number
+}, {
+  cachedCap: Caption
+}>{
+  constructor(props: any) {
+    super(props)
 
-  return (
-    <div className={"caption-item " + (selected_i === index ? 'selected' : '')}
-      key={c.hash} onClick={e => clickFunc(index)}
-      style={{
-        left: `${c.start * scale}px`,
-        width: `${width * scale}px`
-      }}>
+    this.state = {
+      cachedCap: props.cap
+    }
 
-      <span>{c.content}</span>
-    </div>
-  )
+    this.onDragCenterStop = this.onDragCenterStop.bind(this)
+    this.onDragHeadStop = this.onDragHeadStop.bind(this)
+    this.onDragTailStop = this.onDragTailStop.bind(this)
+  }
+
+  onDragCenterStop(e: DraggableEvent, dd: DraggableData) {
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        start: c.start + dd.lastX / s,
+        end: c.end + dd.lastX / s,
+      }
+
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  onDragHeadStop(e: DraggableEvent, dd: DraggableData) {
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        start: c.start + dd.lastX / s,
+      }
+
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  onDragTailStop(e: DraggableEvent, dd: DraggableData) {
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        end: c.end + dd.lastX / s,
+      }
+
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  render() {
+    let
+      c = this.props.cap,
+      width = c.end - c.start,
+      isSelected = this.props.selected_i === this.props.index
+    // movableAxis = isSelected ? "x" : "none"
+
+    return (
+      <div className={"caption-item " + (isSelected ? 'selected' : '')}
+        key={c.hash} onClick={e => this.props.clickFunc(this.props.index)}
+        style={{
+          left: `${c.start * this.props.scale}px`,
+          width: `${width * this.props.scale}px`
+        }}>
+
+        <div className="start-pad">
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragHeadStop}
+          >
+            <div className="inside"></div>
+          </Draggable>
+        </div>
+
+        <div className="content">
+
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragCenterStop}
+          >
+            <div className="slide"></div>
+          </Draggable>
+          <span>{c.content}</span>
+        </div>
+
+        <div className="end-pad">
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragTailStop}
+          >
+            <div className="inside"></div>
+          </Draggable>
+        </div>
+
+      </div >
+    )
+  }
 }
 
-type USPROPS = {
+class UserCursorElem extends React.Component<{
   onTimePick: (userCursorX: number) => void
-}
-class UserCursorElem extends React.Component<USPROPS> {
+}>
+{
   state = { cursorXPos: 0 }
 
   calculateRealOffset(e: MouseEvent) {
