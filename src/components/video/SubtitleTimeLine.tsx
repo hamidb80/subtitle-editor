@@ -16,19 +16,18 @@ import "./subtitle-timeline.sass"
 
 // FIXME unselect caption when user clicked out in empty space 
 
-export default class SubtitleTimeline extends React.Component<
-  {
-    className?: string
+export default class SubtitleTimeline extends React.Component<{
+  className?: string
 
-    duration: number
-    currentTime: number
-    onSelectNewTime: (newTime: number) => void
+  duration: number
+  currentTime: number
+  onSelectNewTime: (newTime: number) => void
 
-    captions: Caption[]
-    selectedCaption_i: number | null
-    onCaptionSelected: (captionIndex: number) => void
-    onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
-  },
+  captions: Caption[]
+  selectedCaption_i: number | null
+  onCaptionSelected: (captionIndex: number) => void
+  onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+},
   {
     error: boolean
     lastScale: number
@@ -36,8 +35,7 @@ export default class SubtitleTimeline extends React.Component<
     timeRulers: string[]
     cursorXPos: number
   }
->
-{
+> {
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
 
@@ -307,6 +305,8 @@ class CaptionItem extends React.Component<{
   }
 
   onDragCenterStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
+
     let
       c = this.props.cap,
       s = this.props.scale,
@@ -320,6 +320,8 @@ class CaptionItem extends React.Component<{
   }
 
   onDragHeadStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
+
     let
       c = this.props.cap,
       s = this.props.scale,
@@ -332,6 +334,8 @@ class CaptionItem extends React.Component<{
   }
 
   onDragTailStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
+
     let
       c = this.props.cap,
       s = this.props.scale,

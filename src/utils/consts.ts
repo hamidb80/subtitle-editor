@@ -1,5 +1,5 @@
 export const
-  MAX_HISTORY = 300,
+  MAX_HISTORY = 30,
   SHOOT_TIME_MAJOR = 5,
   SHOOT_TIME_MINOR = 0.5,
 
