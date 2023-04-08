@@ -74,7 +74,6 @@ export default class Studio extends React.Component<{}, {
     this.handleSeparatorStop = this.handleSeparatorStop.bind(this)
 
     this.addCaptionUIHandler = this.addCaptionUIHandler.bind(this)
-    this.addCaptionObject = this.addCaptionObject.bind(this)
     this.changeCaptionUIHandler = this.changeCaptionUIHandler.bind(this)
     this.changeCaptionObject = this.changeCaptionObject.bind(this)
     this.deleteCaptionUIHandler = this.deleteCaptionUIHandler.bind(this)
@@ -203,10 +202,6 @@ export default class Studio extends React.Component<{}, {
   // ----------------- functionalities --------------------
   // -- captions changes
 
-  addCaptionObject(newCap: Caption): Caption[] {
-    return [...this.state.captions, newCap]
-  }
-
   addCaptionUIHandler() {
     const
       ct = this.state.currentTime,
@@ -217,26 +212,20 @@ export default class Studio extends React.Component<{}, {
         end: t + 1,
         content: "New Caption",
         hash: uuid(),
-      },
-      newHistory = {
-        type: ActionTypes.Add,
-        changes: [newCap]
       }
 
     this.setState({
-      captions: this.addCaptionObject(newCap),
-      selected_caption_i: this.state.captions.length
+      captions: [...this.state.captions, newCap],
+      selected_caption_i: this.state.captions.length,
+      lastAction: { type: ActionTypes.Add },
     })
   }
 
   changeCaptionObject(index: number, newcap: Caption): Caption[] {
-    if (index == this.state.selected_caption_i)
-      return copyReplace(
-        this.state.captions,
-        index,
-        { ...newcap, hash: uuid() })
-    else
-      return this.state.captions
+    return copyReplace(
+      this.state.captions,
+      index,
+      { ...newcap, hash: uuid() })
   }
 
   changedWhat(oldc: Caption, newc: Caption): ActionTypes {
@@ -250,7 +239,7 @@ export default class Studio extends React.Component<{}, {
 
     const
       oldCap = this.state.captions[index],
-      copy = [...this.state.captions]
+      up = this.changeCaptionObject(index, newCap)
 
     let
       newAction: Action = {
@@ -264,15 +253,15 @@ export default class Studio extends React.Component<{}, {
       this.state.lastAction.type == ActionTypes.ChangeTiming &&
       this.state.lastAction.index == newAction.index
     ) {
-      his[his.length - 1] = copy
+      his[his.length - 1] = up
     }
     else {
-      his.push(copy)
+      his.push(up)
       c++
     }
 
     this.setState({
-      captions: this.changeCaptionObject(index, newCap),
+      captions: up,
       history: his,
       historyCursor: c,
       lastAction: newAction
@@ -305,19 +294,18 @@ export default class Studio extends React.Component<{}, {
   undoRedo(undo: boolean) {
     const
       hc = this.state.historyCursor,
-      redo = !undo,
-      history = this.state.history
+      history = this.state.history,
+      dir = (undo ? -1 : +1)
+
+    console.log(history, hc, dir)
 
     // out of range check
-    if (!((undo && (hc >= 0)) || (redo && (hc + 1 < history.length)))) return
-
-    console.log(history)
-
+    if (hc + dir < -1 || hc + dir >= history.length) return
 
     this.setState({
       selected_caption_i: null,
-      captions: this.state.history.pop() as Caption[],
-      historyCursor: hc + (undo ? -1 : +1),
+      captions: this.state.history[hc + (undo ? 0 : +1)],
+      historyCursor: hc + dir,
       lastAction: { type: ActionTypes.Empty }
     })
   }
@@ -411,8 +399,6 @@ export default class Studio extends React.Component<{}, {
         />
 
         <div className="d-flex justify-content-center action-button-group my-2">
-          <span>{this.state.captions.length}</span>
-
           <CircleBtn
             iconClassName="fas fa-plus"
             text="add caption"
@@ -472,8 +458,7 @@ export default class Studio extends React.Component<{}, {
           selectedCaption_i={selected_ci}
           onCaptionChanged={this.changeCaptionUIHandler}
         />
-        
-        
+
         <CaptionEditor
           currentTime={this.state.currentTime}
           totalTime={this.state.totalTime}
