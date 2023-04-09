@@ -12,17 +12,9 @@ import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } f
 import { CircleBtn, pushToast } from "../components/form"
 
 import "./studio.sass"
+import { maxHeaderSize } from 'http'
 const fileDownload = require('js-file-download')
 
-
-enum ActionTypes {
-  Empty, Delete, Add,
-  ChangeContent, ChangeTiming, ChangesNothing
-}
-type Action = {
-  type: ActionTypes
-  index?: number
-}
 
 function copyReplace<T>(arr: T[], i: number, repl: T): T[] {
   return Object.assign([], arr, { [i]: repl })
@@ -39,7 +31,6 @@ export default class Studio extends React.Component<{}, {
   captions: Caption[]
   selected_caption_i: number | null
 
-  lastAction: Action
   history: Caption[][]
   historyCursor: number
 }> {
@@ -60,9 +51,8 @@ export default class Studio extends React.Component<{}, {
       captions: [],
       selected_caption_i: null,
 
-      historyCursor: 0,
-      history: [[]],
-      lastAction: { type: ActionTypes.Empty }
+      historyCursor: -1,
+      history: [],
     }
 
     this.VideoPlayerRef = React.createRef()
@@ -80,6 +70,7 @@ export default class Studio extends React.Component<{}, {
     this.deleteCaptionObject = this.deleteCaptionObject.bind(this)
     this.captionSelectionToggle = this.captionSelectionToggle.bind(this)
 
+    this.updatedHistory = this.updatedHistory.bind(this)
     this.undoRedo = this.undoRedo.bind(this)
 
     this.goToLastStart = this.goToLastStart.bind(this)
@@ -93,7 +84,10 @@ export default class Studio extends React.Component<{}, {
   componentDidMount() {
     // --- init states ---
     const initCaps = appStates.subtitles.getData()
-    this.setState({ captions: initCaps })
+    this.setState({
+      captions: initCaps,
+      ...this.updatedHistory(initCaps)
+    })
 
     // --- bind shortcuts ---
     hotkeys.filter = () => true // to make it work also in input elements
@@ -162,6 +156,7 @@ export default class Studio extends React.Component<{}, {
       kv.preventDefault()
       this.saveFile()
     })
+
   }
   componentWillUnmount() {
     hotkeys.unbind()
@@ -202,72 +197,12 @@ export default class Studio extends React.Component<{}, {
   // ----------------- functionalities --------------------
   // -- captions changes
 
-  addCaptionUIHandler() {
-    const
-      ct = this.state.currentTime,
-      currentCap = this.state.captions.find(c => (ct >= c.start) && (ct <= c.end)),
-      t = currentCap && (currentCap.end - ct < 0.6) ? currentCap.end + 0.001 : ct,
-      newCap = {
-        start: t,
-        end: t + 1,
-        content: "New Caption",
-        hash: uuid(),
-      }
-
-    this.setState({
-      captions: [...this.state.captions, newCap],
-      selected_caption_i: this.state.captions.length,
-      lastAction: { type: ActionTypes.Add },
-    })
-  }
-
   changeCaptionObject(index: number, newcap: Caption): Caption[] {
     return copyReplace(
       this.state.captions,
       index,
       { ...newcap, hash: uuid() })
   }
-
-  changedWhat(oldc: Caption, newc: Caption): ActionTypes {
-    return (oldc.content != newc.content) ?
-      ActionTypes.ChangeContent :
-      ActionTypes.ChangeTiming
-  }
-
-  changeCaptionUIHandler(index: number, newCap: Caption) {
-    if (index < 0 || index >= this.state.captions.length) return // it can happen due to fast repeative user actions
-
-    const
-      oldCap = this.state.captions[index],
-      up = this.changeCaptionObject(index, newCap)
-
-    let
-      newAction: Action = {
-        type: this.changedWhat(oldCap, newCap),
-        index: index,
-      },
-      his = this.state.history,
-      c = this.state.historyCursor
-
-    if (
-      this.state.lastAction.type == ActionTypes.ChangeTiming &&
-      this.state.lastAction.index == newAction.index
-    ) {
-      his[his.length - 1] = up
-    }
-    else {
-      his.push(up)
-      c++
-    }
-
-    this.setState({
-      captions: up,
-      history: his,
-      historyCursor: c,
-      lastAction: newAction
-    })
-  }
-
   deleteCaptionObject(selected_i: number): Caption[] {
     let
       copy = [...this.state.captions],
@@ -281,23 +216,68 @@ export default class Studio extends React.Component<{}, {
     return copy
   }
 
+  addCaptionUIHandler() {
+    let
+      ct = this.state.currentTime,
+      currentCap = this.state.captions.find(c => (ct >= c.start) && (ct <= c.end)),
+      t = currentCap && (currentCap.end - ct < 0.6) ? currentCap.end + 0.001 : ct,
+      newCap = {
+        start: t,
+        end: t + 1,
+        content: "New Caption",
+        hash: uuid(),
+      },
+      caps = this.state.captions.concat(newCap)
+
+    this.setState({
+      captions: caps,
+      selected_caption_i: this.state.captions.length,
+      ...this.updatedHistory(caps),
+    })
+  }
+  changeCaptionUIHandler(index: number, newCap: Caption) {
+    if (index < 0 || index >= this.state.captions.length) return // it can happen due to fast repeative user actions
+
+    let caps = this.changeCaptionObject(index, newCap)
+
+    this.setState({
+      captions: caps,
+      ...this.updatedHistory(caps),
+    })
+  }
   deleteCaptionUIHandler() {
     if (this.state.selected_caption_i === null) return
 
+    let caps = this.deleteCaptionObject(this.state.selected_caption_i)
+
     this.setState({
-      lastAction: { type: ActionTypes.Delete },
       selected_caption_i: null,
-      captions: this.deleteCaptionObject(this.state.selected_caption_i),
+      captions: caps,
+      ...this.updatedHistory(caps),
     })
   }
 
+  updatedHistory(caps: Caption[]): object {
+    let
+      h = this.state.history,
+      li = h.length - 1, // last index
+      c = this.state.historyCursor
+
+    if (c < li)
+      h = [...h.slice(0, c + 1), caps]
+    else
+      h = [...h, caps]
+
+    return {
+      historyCursor: h.length - 1,
+      history: h
+    }
+  }
   undoRedo(undo: boolean) {
     const
       hc = this.state.historyCursor,
       history = this.state.history,
       dir = (undo ? -1 : +1)
-
-    console.log(history, hc, dir)
 
     // out of range check
     if (hc + dir < -1 || hc + dir >= history.length) return
@@ -306,13 +286,12 @@ export default class Studio extends React.Component<{}, {
       selected_caption_i: null,
       captions: this.state.history[hc + (undo ? 0 : +1)],
       historyCursor: hc + dir,
-      lastAction: { type: ActionTypes.Empty }
     })
   }
 
   // -- caption selection
 
-  captionSelectionToggle(index: number) {
+  captionSelectionToggle(index: number | null) {
     this.setState({
       selected_caption_i:
         this.state.selected_caption_i === index ? null : index
@@ -412,7 +391,7 @@ export default class Studio extends React.Component<{}, {
           />
 
           <CircleBtn
-            iconClassName="fas fa-redo" // [0, 1, 2, 3]
+            iconClassName="fas fa-redo"
             text={"redo " + ((this.state.history.length - 1) - this.state.historyCursor)}
             disabled={this.state.historyCursor >= this.state.history.length - 1}
             onClick={() => this.undoRedo(false)}

@@ -13,8 +13,7 @@ import {
 
 import "./subtitle-timeline.sass"
 
-
-// FIXME unselect caption when user clicked out in empty space 
+const out = -10
 
 export default class SubtitleTimeline extends React.Component<{
   className?: string
@@ -25,7 +24,7 @@ export default class SubtitleTimeline extends React.Component<{
 
   captions: Caption[]
   selectedCaption_i: number | null
-  onCaptionSelected: (captionIndex: number) => void
+  onCaptionSelected: (captionIndex: number | null) => void
   onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
 },
   {
@@ -46,7 +45,7 @@ export default class SubtitleTimeline extends React.Component<{
       error: false,
       lastScale: 0,
       scale: 0,
-      cursorXPos: 0,
+      cursorXPos: out,
       timeRulers: [], // array of dataUrl
     }
 
@@ -55,6 +54,8 @@ export default class SubtitleTimeline extends React.Component<{
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
+    this.onBackgroundClick = this.onBackgroundClick.bind(this)
+
     this.initTimeRuler = this.initTimeRuler.bind(this)
     this.updateRuler = this.updateRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
@@ -71,6 +72,10 @@ export default class SubtitleTimeline extends React.Component<{
   // --------------------------- methods ---------------------
   captionSelectionHandler(index: number) {
     this.props.onCaptionSelected(index)
+  }
+  onBackgroundClick() {
+    console.log("wow")
+    this.props.onCaptionSelected(null)
   }
 
   zoom(value: number) {
@@ -259,7 +264,7 @@ export default class SubtitleTimeline extends React.Component<{
                 )}
               </div>
 
-              <div className="captions-side">
+              <div className="captions-side" onClick={this.onBackgroundClick}>
                 {this.props.captions.map((c: Caption, i) =>
                   <CaptionItem
                     cap={c}
@@ -299,6 +304,7 @@ class CaptionItem extends React.Component<{
       cachedCap: props.cap
     }
 
+    this.onClick = this.onClick.bind(this)
     this.onDragCenterStop = this.onDragCenterStop.bind(this)
     this.onDragHeadStop = this.onDragHeadStop.bind(this)
     this.onDragTailStop = this.onDragTailStop.bind(this)
@@ -347,16 +353,20 @@ class CaptionItem extends React.Component<{
     this.props.onCaptionChanged(this.props.selected_i, u)
   }
 
+  onClick(e: MouseEvent) {
+    e.stopPropagation()
+    this.props.clickFunc(this.props.index)
+  }
+
   render() {
     let
       c = this.props.cap,
       width = c.end - c.start,
       isSelected = this.props.selected_i === this.props.index
-    // movableAxis = isSelected ? "x" : "none"
 
     return (
       <div className={"caption-item " + (isSelected ? 'selected' : '')}
-        key={c.hash} onClick={e => this.props.clickFunc(this.props.index)}
+        key={c.hash} onClick={this.onClick}
         style={{
           left: `${c.start * this.props.scale}px`,
           width: `${width * this.props.scale}px`
@@ -398,8 +408,6 @@ class CaptionItem extends React.Component<{
     )
   }
 }
-
-const out = -10
 
 class UserCursorElem extends React.Component<{
   onclick: (e: MouseEvent) => void

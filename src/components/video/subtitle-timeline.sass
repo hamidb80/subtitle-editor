@@ -89,6 +89,7 @@
                 transition-property: opacity, background-color, color
                 transition-duration : 0.2s
                 user-select: none
+                cursor: pointer
 
                 .start-pad
                     background: $orange
@@ -112,12 +113,12 @@
                         height: 100%
 
     
-                &:hover, &.selected
+                &:hover
+                    background: $gray-700
+
+                &.selected
                     opacity: 1
                     background-color: $orange
-
-                    .start-pad
-                        background: $black
 
                 &.selected
                     .content

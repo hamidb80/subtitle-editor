@@ -65,6 +65,11 @@ export default class CaptionEditor extends React.Component<{
       kv.preventDefault()
       this.setState({ is_ltr: !this.state.is_ltr })
     })
+    
+    hotkeys('enter', kv => {
+      this.onCaptionContentChanged(kv)
+      this.handleCaptionChange()
+    })
 
     hotkeys('alt+right', () => {
       this.onCaptionTimeRangeChanged(+SHOOT_SUBTITLE_TIME_MAJOR, 0)
@@ -100,11 +105,11 @@ export default class CaptionEditor extends React.Component<{
     return time >= 0 && time <= this.props.totalTime
   }
 
-  onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
+  onCaptionContentChanged(e: any) {
     const newCap = this.state.newCaption
     if (newCap !== null)
       this.setState({
-        newCaption: { ...newCap, content: e.target.value }
+        newCaption: { ...newCap, content: this.inputRef.current?.value || "" }
       })
   }
   onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null is the value for stick time button
