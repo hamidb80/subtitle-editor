@@ -268,6 +268,8 @@ export default class Studio extends React.Component<{}, {
     else
       h = [...h, caps]
 
+    h = h.slice(-MAX_HISTORY)
+
     return {
       historyCursor: h.length - 1,
       history: h
@@ -299,6 +301,7 @@ export default class Studio extends React.Component<{}, {
   }
 
   goToNextEnd() {
+    // TODO optimize
     const
       ls = this.state,
       ends = ls.captions
