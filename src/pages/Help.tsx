@@ -1,6 +1,7 @@
 import React from 'react'
 import './help.sass'
 
+import captionDrag from '../assets/captionDrag.gif'
 import TCtrolImg from '../assets/TimeControll.jpg'
 import StickTimeImg from '../assets/stickTime.png'
 import TextAlignImg from '../assets/textAlign.png'
@@ -70,6 +71,10 @@ export default class Help extends React.Component<{}, State> {
         clue: 'create new caption',
       },
       {
+        keys: ['enter'],
+        clue: 'updates caption value, it works automatically when you switch between captions too',
+      },
+      {
         keys: ['ctrl', 'delete'],
         clue: 'delete selected caption',
       },
@@ -88,6 +93,12 @@ export default class Help extends React.Component<{}, State> {
     ],
 
     features: [
+      {
+        imageSrc: captionDrag,
+        details: `you can drag head/tail of the captions to extend/limit the timing of the caption. 
+        dragCaption.GIF                  you can also drag center of the caption to move caption forward/backward in time.`
+      },
+  
       {
         imageSrc: TCtrolImg,
         details: `you can change timestamp manually by double clicking on it

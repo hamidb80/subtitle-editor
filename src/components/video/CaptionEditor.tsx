@@ -11,20 +11,20 @@ import { SHOOT_SUBTITLE_TIME_MAJOR } from "../../utils/consts"
 import './caption-editor.sass'
 
 
-type Props = {
+export default class CaptionEditor extends React.Component<{
   currentTime: number // for stick time button
   totalTime: number // video duration
 
   caption: Caption | null
-  onCaptionChanged: (cOld: Caption, cNew: Caption) => void
-}
-type State = {
+  captionIndex: number
+  onCaptionChanged: (index: number, cNew: Caption) => void
+}, {
   lastCaption: Caption | null, // a copy of props.caption to edit
   newCaption: Caption | null,
 
   is_ltr: boolean
-}
-export default class CaptionEditor extends React.Component<Props, State> {
+}>
+{
   inputRef: React.RefObject<HTMLInputElement>
 
   constructor(props: any) {
@@ -65,6 +65,11 @@ export default class CaptionEditor extends React.Component<Props, State> {
       kv.preventDefault()
       this.setState({ is_ltr: !this.state.is_ltr })
     })
+    
+    hotkeys('enter', kv => {
+      this.onCaptionContentChanged(kv)
+      this.handleCaptionChange()
+    })
 
     hotkeys('alt+right', () => {
       this.onCaptionTimeRangeChanged(+SHOOT_SUBTITLE_TIME_MAJOR, 0)
@@ -100,11 +105,11 @@ export default class CaptionEditor extends React.Component<Props, State> {
     return time >= 0 && time <= this.props.totalTime
   }
 
-  onCaptionContentChanged(e: ChangeEvent<HTMLInputElement>) {
+  onCaptionContentChanged(e: any) {
     const newCap = this.state.newCaption
     if (newCap !== null)
       this.setState({
-        newCaption: { ...newCap, content: e.target.value }
+        newCaption: { ...newCap, content: this.inputRef.current?.value || "" }
       })
   }
   onCaptionTimeRangeChanged(startChange: number | null = 0, endChange: number | null = 0) { // null is the value for stick time button
@@ -147,7 +152,7 @@ export default class CaptionEditor extends React.Component<Props, State> {
       this.setState({
         lastCaption: { ...newCap },
         newCaption: { ...newCap }
-      }, () => this.props.onCaptionChanged(lastCaption, newCap))
+      }, () => this.props.onCaptionChanged(this.props.captionIndex, newCap))
     }
   }
 

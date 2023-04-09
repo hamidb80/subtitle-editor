@@ -12,15 +12,15 @@ import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } f
 import { CircleBtn, pushToast } from "../components/form"
 
 import "./studio.sass"
+import { maxHeaderSize } from 'http'
 const fileDownload = require('js-file-download')
 
-enum ActionTypes { Delete, Create, Change }
-type ActionHistory = {
-  type: ActionTypes
-  changes: Caption[]
+
+function copyReplace<T>(arr: T[], i: number, repl: T): T[] {
+  return Object.assign([], arr, { [i]: repl })
 }
 
-type State = {
+export default class Studio extends React.Component<{}, {
   videoUrl: string
   videoHeight: number
   acc: number
@@ -31,10 +31,9 @@ type State = {
   captions: Caption[]
   selected_caption_i: number | null
 
+  history: Caption[][]
   historyCursor: number
-  capsHistory: ActionHistory[] // the last state is always is in the last index
-}
-export default class Studio extends React.Component<{}, State> {
+}> {
 
   VideoPlayerRef: React.RefObject<VideoPlayer>
 
@@ -53,7 +52,7 @@ export default class Studio extends React.Component<{}, State> {
       selected_caption_i: null,
 
       historyCursor: -1,
-      capsHistory: []
+      history: [],
     }
 
     this.VideoPlayerRef = React.createRef()
@@ -65,14 +64,13 @@ export default class Studio extends React.Component<{}, State> {
     this.handleSeparatorStop = this.handleSeparatorStop.bind(this)
 
     this.addCaptionUIHandler = this.addCaptionUIHandler.bind(this)
-    this.addCaptionObject = this.addCaptionObject.bind(this)
     this.changeCaptionUIHandler = this.changeCaptionUIHandler.bind(this)
     this.changeCaptionObject = this.changeCaptionObject.bind(this)
     this.deleteCaptionUIHandler = this.deleteCaptionUIHandler.bind(this)
     this.deleteCaptionObject = this.deleteCaptionObject.bind(this)
     this.captionSelectionToggle = this.captionSelectionToggle.bind(this)
 
-    this.updateHistory = this.updateHistory.bind(this)
+    this.updatedHistory = this.updatedHistory.bind(this)
     this.undoRedo = this.undoRedo.bind(this)
 
     this.goToLastStart = this.goToLastStart.bind(this)
@@ -86,7 +84,10 @@ export default class Studio extends React.Component<{}, State> {
   componentDidMount() {
     // --- init states ---
     const initCaps = appStates.subtitles.getData()
-    this.setState({ captions: initCaps })
+    this.setState({
+      captions: initCaps,
+      ...this.updatedHistory(initCaps)
+    })
 
     // --- bind shortcuts ---
     hotkeys.filter = () => true // to make it work also in input elements
@@ -155,6 +156,7 @@ export default class Studio extends React.Component<{}, State> {
       kv.preventDefault()
       this.saveFile()
     })
+
   }
   componentWillUnmount() {
     hotkeys.unbind()
@@ -195,12 +197,27 @@ export default class Studio extends React.Component<{}, State> {
   // ----------------- functionalities --------------------
   // -- captions changes
 
-  addCaptionObject(newCap: Caption): object {
-    return { captions: [...this.state.captions, newCap] }
+  changeCaptionObject(index: number, newcap: Caption): Caption[] {
+    return copyReplace(
+      this.state.captions,
+      index,
+      { ...newcap, hash: uuid() })
+  }
+  deleteCaptionObject(selected_i: number): Caption[] {
+    let
+      copy = [...this.state.captions],
+      lastIndex = copy.length - 1
+
+    if (selected_i != lastIndex)
+      copy[selected_i] = copy[lastIndex]
+
+    copy.pop()
+
+    return copy
   }
 
   addCaptionUIHandler() {
-    const
+    let
       ct = this.state.currentTime,
       currentCap = this.state.captions.find(c => (ct >= c.start) && (ct <= c.end)),
       t = currentCap && (currentCap.end - ct < 0.6) ? currentCap.end + 0.001 : ct,
@@ -210,124 +227,73 @@ export default class Studio extends React.Component<{}, State> {
         content: "New Caption",
         hash: uuid(),
       },
-      newHistory = {
-        type: ActionTypes.Create,
-        changes: [newCap]
-      }
+      caps = this.state.captions.concat(newCap)
 
     this.setState({
-      ...this.addCaptionObject(newCap),
-      selected_caption_i: this.state.captions.length
-    }, () => this.updateHistory(newHistory))
+      captions: caps,
+      selected_caption_i: this.state.captions.length,
+      ...this.updatedHistory(caps),
+    })
   }
+  changeCaptionUIHandler(index: number, newCap: Caption) {
+    if (index < 0 || index >= this.state.captions.length) return // it can happen due to fast repeative user actions
 
-  changeCaptionObject(fromCap: Caption, toCap: Caption): object {
-    return {
-      captions: this.state.captions.map(c => c.hash === fromCap.hash ? toCap : c)
-    }
+    let caps = this.changeCaptionObject(index, newCap)
+
+    this.setState({
+      captions: caps,
+      ...this.updatedHistory(caps),
+    })
   }
-  changeCaptionUIHandler(oldCap: Caption, newCap: Caption) {
-    const oldCapIndex = this.state.captions.findIndex(c => c.hash === oldCap.hash)
-    if (oldCapIndex === -1) return // it can happen due to fast repeative user actions
-
-    const newHistory = {
-      type: ActionTypes.Change,
-      changes: [oldCap, newCap]
-    }
-
-    this.setState(
-      this.changeCaptionObject(oldCap, newCap),
-      () => this.updateHistory(newHistory))
-  }
-
-  deleteCaptionObject(selected_caption_index: number): object {
-    return {
-      captions: this.state.captions.filter(
-        (_, i) => i !== selected_caption_index),
-    }
-  }
-
   deleteCaptionUIHandler() {
-    const ls = this.state // last state
-    if (ls.selected_caption_i === null) return
+    if (this.state.selected_caption_i === null) return
 
-    const newHistory = {
-      type: ActionTypes.Delete,
-      changes: [ls.captions[ls.selected_caption_i],]
-    }
+    let caps = this.deleteCaptionObject(this.state.selected_caption_i)
 
     this.setState({
       selected_caption_i: null,
-      ...this.deleteCaptionObject(ls.selected_caption_i),
-
-    }, () => this.updateHistory(newHistory))
-  }
-
-  updateHistory(newAction: ActionHistory) {
-    const hc = this.state.historyCursor
-    let lastHistory = this.state.capsHistory
-
-    // [0, 1, 2, 3], c:2 => [0, 1, 2]
-    if (hc !== lastHistory.length - 1) // if it didn't point on the last history before updating history
-      lastHistory = lastHistory.slice(0, hc + 1)
-
-    // [1, 2, 3, 4] => [2, 3, 4]
-    else if (lastHistory.length >= MAX_HISTORY)
-      lastHistory = lastHistory.slice(1)
-
-    this.setState({
-      capsHistory: [...lastHistory, newAction],
-      historyCursor: lastHistory.length
+      captions: caps,
+      ...this.updatedHistory(caps),
     })
   }
 
+  updatedHistory(caps: Caption[]): object {
+    let
+      h = this.state.history,
+      li = h.length - 1, // last index
+      c = this.state.historyCursor
+
+    if (c < li)
+      h = [...h.slice(0, c + 1), caps]
+    else
+      h = [...h, caps]
+
+    h = h.slice(-MAX_HISTORY)
+
+    return {
+      historyCursor: h.length - 1,
+      history: h
+    }
+  }
   undoRedo(undo: boolean) {
     const
       hc = this.state.historyCursor,
-      redo = !undo,
-      history = this.state.capsHistory
-
-    let newState: object
+      history = this.state.history,
+      dir = (undo ? -1 : +1)
 
     // out of range check
-    if (!((undo && (hc >= 0)) || (redo && (hc + 1 < history.length)))) return
-
-    let
-      caps = this.state.captions,
-      lastAction = history[hc + (undo ? 0 : +1)]
-
-    if (
-      (undo && lastAction.type === ActionTypes.Create) ||
-      (redo && lastAction.type === ActionTypes.Delete)
-    ) {
-      newState =
-        this.deleteCaptionObject(caps.findIndex(c => c.hash === lastAction.changes[0].hash))
-    }
-
-    else if (
-      (undo && lastAction.type === ActionTypes.Delete) ||
-      (redo && lastAction.type === ActionTypes.Create)
-    ) {
-      newState = this.addCaptionObject(lastAction.changes[0])
-    }
-
-    else {
-      if (undo)
-        newState = this.changeCaptionObject(lastAction.changes[1], lastAction.changes[0])
-      else // redo
-        newState = this.changeCaptionObject(lastAction.changes[0], lastAction.changes[1])
-    }
+    if (hc + dir < -1 || hc + dir >= history.length) return
 
     this.setState({
-      ...newState,
       selected_caption_i: null,
-      historyCursor: hc + (undo ? -1 : +1),
+      captions: this.state.history[hc + (undo ? 0 : +1)],
+      historyCursor: hc + dir,
     })
   }
 
   // -- caption selection
 
-  captionSelectionToggle(index: number) {
+  captionSelectionToggle(index: number | null) {
     this.setState({
       selected_caption_i:
         this.state.selected_caption_i === index ? null : index
@@ -335,6 +301,7 @@ export default class Studio extends React.Component<{}, State> {
   }
 
   goToNextEnd() {
+    // TODO optimize
     const
       ls = this.state,
       ends = ls.captions
@@ -427,9 +394,9 @@ export default class Studio extends React.Component<{}, State> {
           />
 
           <CircleBtn
-            iconClassName="fas fa-redo" // [0, 1, 2, 3]
-            text={"redo " + ((this.state.capsHistory.length - 1) - this.state.historyCursor)}
-            disabled={this.state.historyCursor >= this.state.capsHistory.length - 1}
+            iconClassName="fas fa-redo"
+            text={"redo " + ((this.state.history.length - 1) - this.state.historyCursor)}
+            disabled={this.state.historyCursor >= this.state.history.length - 1}
             onClick={() => this.undoRedo(false)}
           />
 
@@ -471,12 +438,14 @@ export default class Studio extends React.Component<{}, State> {
           captions={caps}
           onCaptionSelected={this.captionSelectionToggle}
           selectedCaption_i={selected_ci}
+          onCaptionChanged={this.changeCaptionUIHandler}
         />
 
         <CaptionEditor
           currentTime={this.state.currentTime}
           totalTime={this.state.totalTime}
           caption={selected_ci === null ? null : caps[selected_ci]}
+          captionIndex={selected_ci === null ? -1 : selected_ci}
           onCaptionChanged={this.changeCaptionUIHandler}
         />
 

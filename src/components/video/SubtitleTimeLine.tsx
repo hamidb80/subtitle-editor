@@ -1,4 +1,5 @@
 import React, { MouseEvent } from 'react'
+import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
 import hotkeys from 'hotkeys-js'
 
 import { CircleBtn } from "../form"
@@ -12,7 +13,9 @@ import {
 
 import "./subtitle-timeline.sass"
 
-type Props = {
+const out = -10
+
+export default class SubtitleTimeline extends React.Component<{
   className?: string
 
   duration: number
@@ -21,17 +24,17 @@ type Props = {
 
   captions: Caption[]
   selectedCaption_i: number | null
-  onCaptionSelected: (captionIndex: number) => void
-}
-
-type State = {
-  error: boolean
-  lastScale: number
-  scale: number
-  timeRulers: string[]
-}
-
-export default class SubtitleTimeline extends React.Component<Props, State> {
+  onCaptionSelected: (captionIndex: number | null) => void
+  onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+},
+  {
+    error: boolean
+    lastScale: number
+    scale: number
+    timeRulers: string[]
+    cursorXPos: number
+  }
+> {
   canvasRef: React.RefObject<HTMLDivElement>
   group: Konva.Group | null
 
@@ -42,15 +45,17 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
       error: false,
       lastScale: 0,
       scale: 0,
-      timeRulers: [] // array of dataUrl
+      cursorXPos: out,
+      timeRulers: [], // array of dataUrl
     }
 
     this.canvasRef = React.createRef()
     this.group = null
 
-
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
+    this.onBackgroundClick = this.onBackgroundClick.bind(this)
+
     this.initTimeRuler = this.initTimeRuler.bind(this)
     this.updateRuler = this.updateRuler.bind(this)
     this.setTimeFromPixels = this.setTimeFromPixels.bind(this)
@@ -60,11 +65,17 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
     this.zoomOut = this.zoomOut.bind(this)
     this.isZoomInValid = this.isZoomInValid.bind(this)
     this.isZoomOutValid = this.isZoomOutValid.bind(this)
+
+    this.calculateRealOffset = this.calculateRealOffset.bind(this)
   }
 
   // --------------------------- methods ---------------------
   captionSelectionHandler(index: number) {
     this.props.onCaptionSelected(index)
+  }
+  onBackgroundClick() {
+    console.log("wow")
+    this.props.onCaptionSelected(null)
   }
 
   zoom(value: number) {
@@ -84,6 +95,13 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
   }
   zoomOut() {
     this.zoom(-SHOOT_ZOOM)
+  }
+
+  calculateRealOffset(e: MouseEvent) {
+    const mouseX = e.pageX, // based on the screen
+      PostionOfElem = e.currentTarget.getBoundingClientRect()
+
+    return mouseX - PostionOfElem.left
   }
 
   setTimeFromPixels(timePerPixels: number) {
@@ -221,16 +239,21 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
             marginLeft: `${TIMELINE_CURSOR_OFFSET * scale}px`,
           }}></div>
 
-          <div className="mover">
+          <div className="mover"
+            onMouseMove={e => this.setState({ cursorXPos: this.calculateRealOffset(e) })}
+            onMouseLeave={() => this.setState({ cursorXPos: out })}
+          >
 
-            <div className="time-ruler-konva" ref={this.canvasRef}></div>
+            <div className="konva-instance" ref={this.canvasRef}></div>
 
-            <div className="time-ruler-wrapper">
-              <UserCursorElem onTimePick={this.setTimeFromPixels} />
+            <div className="time-cursor-wrapper">
+              <UserCursorElem
+                posx={this.state.cursorXPos}
+                onclick={(e: MouseEvent) => this.setTimeFromPixels(this.calculateRealOffset(e))} />
             </div>
 
-            <div style={{
-              transform: `translateX(${progress}%) translateY(-30px)`,
+            <div className="inside-timeline" style={{
+              transform: `translateX(${progress}%)`,
               width: `${duration * scale}px`,
               transition: "0.1s linear"
             }}>
@@ -241,9 +264,17 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
                 )}
               </div>
 
-              <div className="captions-side">
+              <div className="captions-side" onClick={this.onBackgroundClick}>
                 {this.props.captions.map((c: Caption, i) =>
-                  captionItem(c, i, this.props.selectedCaption_i, this.captionSelectionHandler, scale))
+                  <CaptionItem
+                    cap={c}
+                    index={i}
+                    selected_i={this.props.selectedCaption_i ?? -1}
+                    clickFunc={this.captionSelectionHandler}
+                    onCaptionChanged={this.props.onCaptionChanged}
+                    scale={scale}
+                  />
+                )
                 }
               </div>
             </div>
@@ -256,49 +287,140 @@ export default class SubtitleTimeline extends React.Component<Props, State> {
   }
 }
 
-// captions
-function captionItem(
-  c: Caption, index: number, selected_i: null | number,
-  clickFunc: (index: number) => void, scale: number
-): JSX.Element {
-  const width = c.end - c.start
+class CaptionItem extends React.Component<{
+  cap: Caption
+  index: number
+  selected_i: number
+  clickFunc: (index: number) => void
+  onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+  scale: number
+}, {
+  cachedCap: Caption
+}>{
+  constructor(props: any) {
+    super(props)
 
-  return (
-    <div className={"caption-item " + (selected_i === index ? 'selected' : '')}
-      key={c.hash} onClick={e => clickFunc(index)}
-      style={{
-        left: `${c.start * scale}px`,
-        width: `${width * scale}px`
-      }}>
+    this.state = {
+      cachedCap: props.cap
+    }
 
-      <span>{c.content}</span>
-    </div>
-  )
-}
+    this.onClick = this.onClick.bind(this)
+    this.onDragCenterStop = this.onDragCenterStop.bind(this)
+    this.onDragHeadStop = this.onDragHeadStop.bind(this)
+    this.onDragTailStop = this.onDragTailStop.bind(this)
+  }
 
-type USPROPS = {
-  onTimePick: (userCursorX: number) => void
-}
-class UserCursorElem extends React.Component<USPROPS> {
-  state = { cursorXPos: 0 }
+  onDragCenterStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
 
-  calculateRealOffset(e: MouseEvent) {
-    const mouseX = e.pageX, // based on the screen
-      PostionOfElem = e.currentTarget.getBoundingClientRect()
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        start: c.start + dd.lastX / s,
+        end: c.end + dd.lastX / s,
+      }
 
-    return mouseX - PostionOfElem.left
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  onDragHeadStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
+
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        start: c.start + dd.lastX / s,
+      }
+
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  onDragTailStop(e: DraggableEvent, dd: DraggableData) {
+    if (this.props.selected_i != this.props.index) return
+
+    let
+      c = this.props.cap,
+      s = this.props.scale,
+      u = {
+        ...c,
+        end: c.end + dd.lastX / s,
+      }
+
+    this.props.onCaptionChanged(this.props.selected_i, u)
+  }
+
+  onClick(e: MouseEvent) {
+    e.stopPropagation()
+    this.props.clickFunc(this.props.index)
   }
 
   render() {
+    let
+      c = this.props.cap,
+      width = c.end - c.start,
+      isSelected = this.props.selected_i === this.props.index
+
+    return (
+      <div className={"caption-item " + (isSelected ? 'selected' : '')}
+        key={c.hash} onClick={this.onClick}
+        style={{
+          left: `${c.start * this.props.scale}px`,
+          width: `${width * this.props.scale}px`
+        }}>
+
+        <div className="start-pad">
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragHeadStop}
+          >
+            <div className="inside"></div>
+          </Draggable>
+        </div>
+
+        <div className="content">
+
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragCenterStop}
+          >
+            <div className="slide"></div>
+          </Draggable>
+          <span>{c.content}</span>
+        </div>
+
+        <div className="end-pad">
+          <Draggable
+            axis={isSelected ? "x" : "none"}
+            position={{ x: 0, y: 0 }}
+            onStop={this.onDragTailStop}
+          >
+            <div className="inside"></div>
+          </Draggable>
+        </div>
+
+      </div >
+    )
+  }
+}
+
+class UserCursorElem extends React.Component<{
+  onclick: (e: MouseEvent) => void
+  posx: number
+}>
+{
+  render() {
     return (
       <div className="user-time-cursor-wrapper"
-        onMouseMove={e => this.setState({ cursorXPos: this.calculateRealOffset(e) })}
-        onMouseLeave={() => this.setState({ cursorXPos: 0 })}
-        onClick={e => this.props.onTimePick(this.calculateRealOffset(e))} >
-
+        onClick={this.props.onclick} >
         <div className="user-time-cursor"
-          style={{ transform: `translateX(${this.state.cursorXPos}px)` }}></div>
-      </div >
+          style={{ transform: `translateX(${this.props.posx}px)` }}></div>
+      </div>
     )
   }
 }
