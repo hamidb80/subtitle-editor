@@ -1,6 +1,6 @@
 # web based subtitle editor
 
-> health and safety are 2 forgotten gifts among people - Muhammad PBUH 
+> health and safety are 2 forgotten gifts among people - Muhammad the prophet 
 
 ## demo
 you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
