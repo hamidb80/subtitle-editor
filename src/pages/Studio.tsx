@@ -5,7 +5,6 @@ import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
 import { simpleSort } from "../utils/funcs"
-import { getQueryParams } from "../utils/browser"
 import { Caption, export2srt, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
@@ -456,7 +455,7 @@ export default class Studio extends React.Component<{}, {
       </div>
 
       <div className="d-flex justify-content-center my-2 download-form">
-        <input className="form-control" placeholder="file name" 
+        <input className="form-control" placeholder="file-name.srt" 
           value={this.state.subFileName} 
           onChange={ e => this.setState({subFileName: e.currentTarget.value})}  />
         <button className="btn btn-danger" onClick={this.saveFile}>

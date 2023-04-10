@@ -1,17 +1,16 @@
 import React, { ChangeEvent, createRef, RefObject } from 'react'
 import './file-input.sass'
 
-type Props = {
-	onChange?: (f: File) => void
-}
 
-class FileInput extends React.Component<Props> {
-	state: { filename: string }
+class FileInput extends React.Component<{
+	onChange?: (f: File) => void
+	filename: string
+}, {}> {
+
 	fileInput: RefObject<HTMLInputElement>
 
 	constructor(props: any) {
 		super(props)
-		this.state = { filename: '' }
 
 		this.fileInput = createRef()
 
@@ -26,8 +25,6 @@ class FileInput extends React.Component<Props> {
 		if (this.props.onChange && inputFileElem.files?.length) {
 			const file = inputFileElem.files[0]
 			this.props.onChange(file)
-
-			this.setState({ filename: file.name })
 		}
 	}
 
@@ -37,7 +34,7 @@ class FileInput extends React.Component<Props> {
 
 	render() {
 		const
-			filename = this.state.filename,
+			filename = this.props.filename,
 			placeHolder = filename ? `[${filename}] click to rechoose` : 'choose a file'
 
 		return (

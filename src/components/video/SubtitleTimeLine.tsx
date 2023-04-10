@@ -259,8 +259,8 @@ export default class SubtitleTimeline extends React.Component<{
             }}>
 
               <div className="times" >
-                {this.state.timeRulers.map(dataUrl =>
-                  <img src={dataUrl} />
+                {this.state.timeRulers.map((dataUrl, i) =>
+                  <img src={dataUrl} alt={`time-ruler-{i}`} />
                 )}
               </div>
 
@@ -311,7 +311,7 @@ class CaptionItem extends React.Component<{
   }
 
   onDragCenterStop(e: DraggableEvent, dd: DraggableData) {
-    if (this.props.selected_i != this.props.index) return
+    if (this.props.selected_i !== this.props.index) return
 
     let
       c = this.props.cap,
@@ -326,7 +326,7 @@ class CaptionItem extends React.Component<{
   }
 
   onDragHeadStop(e: DraggableEvent, dd: DraggableData) {
-    if (this.props.selected_i != this.props.index) return
+    if (this.props.selected_i !== this.props.index) return
 
     let
       c = this.props.cap,
@@ -340,7 +340,7 @@ class CaptionItem extends React.Component<{
   }
 
   onDragTailStop(e: DraggableEvent, dd: DraggableData) {
-    if (this.props.selected_i != this.props.index) return
+    if (this.props.selected_i !== this.props.index) return
 
     let
       c = this.props.cap,

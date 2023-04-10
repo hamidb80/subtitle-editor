@@ -4,12 +4,16 @@ import { Link, Redirect } from "react-router-dom"
 import { FileInput, pushToast } from "../components/form"
 import appStates from "../utils/states"
 import { parseSrt } from "../utils/caption"
+import { getQueryParams } from "../utils/browser"
 
 import "./intro.sass"
+import { basename } from 'path'
 
 type State = {
   subtitleUrl: string
   videoUrl: string
+  subtitleFname: string
+  videoFname: string
   canPass: boolean
 }
 export default class Intro extends React.Component<{}, State> {
@@ -19,32 +23,54 @@ export default class Intro extends React.Component<{}, State> {
       subtitleUrl: '',
       videoUrl: '',
       canPass: false,
+      subtitleFname: "",
+      videoFname: ""
     }
 
     this.handler = this.handler.bind(this)
     this.loadCaptions = this.loadCaptions.bind(this)
+    this.loadVideo = this.loadVideo.bind(this)
     this.checkValidation = this.checkValidation.bind(this)
   }
 
-  async loadCaptions() {
-    if (this.state.subtitleUrl === '')
-      return
+  componentDidMount() {
+    let
+      params = getQueryParams(),
+      sub = params["subtitle"] ?? "",
+      vid = params["video"] ?? ""
 
-    const response = await fetch(this.state.subtitleUrl),
+      this.loadVideo(vid, basename(vid))
+      this.loadCaptions(sub, basename(sub))
+  }
+
+  async loadCaptions(url: string, fname: string) {
+    if (url === '') return
+
+    const
+      response = await fetch(url),
       data = await response.text()
 
     appStates.subtitles.setData(parseSrt(data))
+
+    this.setState({
+      subtitleUrl: url,
+      subtitleFname: fname
+    })
+  }
+
+  loadVideo(url: string, name: string) {
+    appStates.videoUrl.setData(url)
+    this.setState({ videoUrl: url, videoFname: name })
   }
 
   handler(f: File, fileType: "video" | "subtitle") {
     const blob = URL.createObjectURL(f)
 
-    if (fileType === 'video') {
-      appStates.videoUrl.setData(blob)
-      this.setState({ videoUrl: blob }, this.loadCaptions)
-    }
+    if (fileType === 'video')
+      this.loadVideo(blob, f.name)
+
     else
-      this.setState({ subtitleUrl: blob }, this.loadCaptions)
+      this.loadCaptions(blob, f.name)
   }
 
   checkValidation() {
@@ -53,9 +79,9 @@ export default class Intro extends React.Component<{}, State> {
 
     else
       pushToast({
-        kind: 'danger', 
+        kind: 'danger',
         message: "select a video first",
-         duration: 5000
+        duration: 5000
       })
   }
 
@@ -64,15 +90,20 @@ export default class Intro extends React.Component<{}, State> {
       return <Redirect to="/studio" />
 
     return (<>
-      <h2 className="page-title" >Intro</h2>
+      <h2 className="page-title"> Intro </h2>
       <div className="wrapper">
 
         <div className="alert alert-secondary">
-          consider‌ <Link to="/help">‌help page‌</Link> for learning app features & shortcuts
+          consider
+          <Link to="/help"> help page </Link>
+          for learning app features & shortcuts
         </div>
+
         <div>
-          <span>video file:</span>
-          <FileInput onChange={f => this.handler(f, 'video')} />
+          <span> video file: </span>
+          <FileInput
+            onChange={f => this.handler(f, 'video')}
+            filename={this.state.videoFname} />
         </div>
 
         <div className="alert alert-info">
@@ -81,8 +112,11 @@ export default class Intro extends React.Component<{}, State> {
         </div>
 
         <div className="mt-3">
-          <span>subtitle file:</span>
-          <FileInput onChange={f => this.handler(f, 'subtitle')} />
+          <span> subtitle file: </span>
+          <FileInput
+            onChange={f => this.handler(f, 'subtitle')}
+            filename={this.state.subtitleFname}
+          />
         </div>
         <div className="alert alert-warning">
           if you don't select a subtitle file, we make new one

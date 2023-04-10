@@ -16,6 +16,7 @@
     "hotkeys-js": "^3.8.2",
     "js-file-download": "^0.4.12",
     "konva": "^8.3.2",
+    "parse-filepath": "^1.0.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-draggable": "^4.4.4",
