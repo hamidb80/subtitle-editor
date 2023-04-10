@@ -9,7 +9,7 @@ you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
 * shortcuts/mouse
 * undo/redo
 * nice ux/ui [native components - no external UI libraries]
-* loads resources with query params `http://APP?video=URL&subtitle=URL` where `APP` is demo url
+* loads resources with query params `http://APP ?video=URL&subtitle=URL` where `APP` is demo url
 
 ## commands:
 `npm install yarn`
