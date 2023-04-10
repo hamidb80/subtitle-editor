@@ -54,7 +54,6 @@ export default class SubtitleTimeline extends React.Component<{
 
     // --- method binding ---
     this.captionSelectionHandler = this.captionSelectionHandler.bind(this)
-    this.onBackgroundClick = this.onBackgroundClick.bind(this)
 
     this.initTimeRuler = this.initTimeRuler.bind(this)
     this.updateRuler = this.updateRuler.bind(this)
@@ -72,10 +71,6 @@ export default class SubtitleTimeline extends React.Component<{
   // --------------------------- methods ---------------------
   captionSelectionHandler(index: number) {
     this.props.onCaptionSelected(index)
-  }
-  onBackgroundClick() {
-    console.log("wow")
-    this.props.onCaptionSelected(null)
   }
 
   zoom(value: number) {
@@ -264,7 +259,7 @@ export default class SubtitleTimeline extends React.Component<{
                 )}
               </div>
 
-              <div className="captions-side" onClick={this.onBackgroundClick}>
+              <div className="captions-side">
                 {this.props.captions.map((c: Caption, i) =>
                   <CaptionItem
                     cap={c}
@@ -354,7 +349,6 @@ class CaptionItem extends React.Component<{
   }
 
   onClick(e: MouseEvent) {
-    e.stopPropagation()
     this.props.clickFunc(this.props.index)
   }
 

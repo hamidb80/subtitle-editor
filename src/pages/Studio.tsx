@@ -211,7 +211,7 @@ export default class Studio extends React.Component<{}, {
       copy = [...this.state.captions],
       lastIndex = copy.length - 1
 
-    if (selected_i != lastIndex)
+    if (selected_i !== lastIndex)
       copy[selected_i] = copy[lastIndex]
 
     copy.pop()
