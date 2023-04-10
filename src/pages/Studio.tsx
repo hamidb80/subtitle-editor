@@ -5,6 +5,7 @@ import { v4 as uuid } from "uuid"
 
 import appStates from "../utils/states"
 import { simpleSort } from "../utils/funcs"
+import { getQueryParams } from "../utils/browser"
 import { Caption, export2srt, captionsCompare } from "../utils/caption"
 import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
 
@@ -12,7 +13,6 @@ import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } f
 import { CircleBtn, pushToast } from "../components/form"
 
 import "./studio.sass"
-import { maxHeaderSize } from 'http'
 const fileDownload = require('js-file-download')
 
 
@@ -24,13 +24,15 @@ export default class Studio extends React.Component<{}, {
   videoUrl: string
   videoHeight: number
   acc: number
+  
+  subFileName: string
 
   currentTime: number
   totalTime: number
 
   captions: Caption[]
   selected_caption_i: number | null
-
+  
   history: Caption[][]
   historyCursor: number
 }> {
@@ -47,6 +49,8 @@ export default class Studio extends React.Component<{}, {
 
       currentTime: 0,
       totalTime: 0,
+
+      subFileName: "subtitle.srt",
 
       captions: [],
       selected_caption_i: null,
@@ -327,7 +331,7 @@ export default class Studio extends React.Component<{}, {
 
   saveFile() {
     this.state.captions.sort(captionsCompare)
-    fileDownload(export2srt(this.state.captions), 'subtitle.srt')
+    fileDownload(export2srt(this.state.captions), this.state.subFileName)
   }
 
   handleSeparatorStop(e: DraggableEvent, dd: DraggableData) {
@@ -451,7 +455,10 @@ export default class Studio extends React.Component<{}, {
 
       </div>
 
-      <div className="d-flex justify-content-center my-2">
+      <div className="d-flex justify-content-center my-2 download-form">
+        <input className="form-control" placeholder="file name" 
+          value={this.state.subFileName} 
+          onChange={ e => this.setState({subFileName: e.currentTarget.value})}  />
         <button className="btn btn-danger" onClick={this.saveFile}>
           <strong> save as a file <span className="fas fa-file"></span>  </strong>
         </button>
