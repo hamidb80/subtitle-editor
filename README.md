@@ -5,6 +5,8 @@
 ## demo
 you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
 
+![screenshot](./src/assets/screenshot.png)
+
 ## features
 * shortcuts/mouse
 * undo/redo
