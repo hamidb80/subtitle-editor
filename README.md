@@ -1,6 +1,7 @@
 # web based subtitle editor
-
 > health and safety are 2 forgotten gifts among people - Muhammad the prophet 
+
+[![ReadMeSupportPalestine](https://raw.githubusercontent.com/Safouene1/support-palestine-banner/master/banner-support.svg)](https://github.com/Safouene1/support-palestine-banner)
 
 ## demo
 you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
