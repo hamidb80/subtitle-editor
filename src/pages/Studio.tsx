@@ -12,7 +12,7 @@ import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } f
 import { CircleBtn, pushToast } from "../components/form"
 
 import "./studio.sass"
-const fileDownload = require('js-file-download')
+import fileDownload from 'js-file-download'
 
 
 function copyReplace<T>(arr: T[], i: number, repl: T): T[] {
@@ -138,8 +138,7 @@ export default class Studio extends React.Component<{}, {
         this.setState({ selected_caption_i: i })
     })
     hotkeys('escape', kv => {
-      kv.preventDefault()
-      this.setState({ selected_caption_i: null })
+        this.setState({ selected_caption_i: null })
     })
 
     hotkeys('space', kv => {

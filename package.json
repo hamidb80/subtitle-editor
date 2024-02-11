@@ -4,33 +4,46 @@
   "private": true,
   "homepage": "https://hamidb80.github.io/subtitle-editor/",
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/jest": "^26.0.15",
-    "@types/node": "^12.0.0",
-    "@types/react": "^16.9.53",
-    "@types/react-dom": "^16.9.8",
-    "@types/react-router-dom": "^5.1.6",
-    "bootstrap": "^4.5.3",
-    "hotkeys-js": "^3.8.2",
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.17",
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/react-router-dom": "^5.3.3",
+    "bootstrap": "^5.3.2",
+    "hotkeys-js": "^3.13.7",
     "js-file-download": "^0.4.12",
-    "konva": "^8.3.2",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-draggable": "^4.4.4",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.1",
-    "sass": "^1.30.0",
-    "typescript": "^4.0.3",
-    "uuid": "^3.4.0",
-    "web-vitals": "^0.2.4"
+    "konva": "^9.3.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-draggable": "^4.4.6",
+    "react-router-dom": "^6.22.0",
+    "react-scripts": "5.0.1",
+    "typescript": "^5.3.3",
+    "uuid": "^9.0.1",
+    "web-vitals": "^3.5.2"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.55",
+    "@types/react-dom": "^18.2.19",
+    "@types/uuid": "^9.0.8",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "sass": "^1.70.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.1.0"
   },
   "eslintConfig": {
     "extends": [
@@ -49,8 +62,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@types/uuid": "^8.3.0"
   }
 }

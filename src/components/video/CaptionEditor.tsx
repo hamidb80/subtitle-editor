@@ -43,6 +43,7 @@ export default class CaptionEditor extends React.Component<{
     this.onCaptionTimeRangeChanged = this.onCaptionTimeRangeChanged.bind(this)
     this.handleCaptionChange = this.handleCaptionChange.bind(this)
     this.isCapInTimeRange = this.isCapInTimeRange.bind(this)
+    this.handleKeypress = this.handleKeypress.bind(this) 
   }
 
   // ------------------- component API -------------------------
@@ -146,7 +147,6 @@ export default class CaptionEditor extends React.Component<{
 
     if (!areSameCaptions(this.state.lastCaption, this.state.newCaption)) {
       const
-        lastCaption = this.state.lastCaption,
         newCap = { ...this.state.newCaption, hash: uuid() }
 
       this.setState({
@@ -154,6 +154,11 @@ export default class CaptionEditor extends React.Component<{
         newCaption: { ...newCap }
       }, () => this.props.onCaptionChanged(this.props.captionIndex, newCap))
     }
+  }
+
+  handleKeypress(e: KeyboardEvent){
+    if (e.key == "Escape") // to save the states
+      this.inputRef.current?.blur()
   }
 
   render() {
@@ -179,10 +184,14 @@ export default class CaptionEditor extends React.Component<{
             onClick={() => this.setState(ls => ({ is_ltr: !ls.is_ltr }))}
             iconClassName={"fas fa-align-" + (this.state.is_ltr ? "left" : "right")}
           />
-          <input type="text" ref={this.inputRef} disabled={cap === null}
+          <input 
+            type="text" 
+            ref={this.inputRef} 
+            disabled={cap === null}
             className={"form-control caption-editor " + (this.state.is_ltr ? "ltr" : "rtl")}
             value={this.state.newCaption?.content || ""}
             onChange={this.onCaptionContentChanged}
+            onKeyDown={this.handleKeypress}
             onBlur={this.handleCaptionChange} />
         </div>
 

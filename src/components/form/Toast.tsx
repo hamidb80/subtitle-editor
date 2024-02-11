@@ -42,7 +42,6 @@ export default class Toast extends React.Component<{}, State> {
 
   cancelToast() {
     this.cancelTimer()
-    console.log("errrrr");
     this.setState({ isOpen: false })
   }
 
@@ -66,7 +65,7 @@ export default class Toast extends React.Component<{}, State> {
 
   componentWillUnmount() {
     // @ts-ignore
-    window.removeEventListener('toast')
+    // window.removeEventListener('toast')
   }
 
   render() {

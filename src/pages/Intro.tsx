@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Redirect } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 
 import { FileInput, pushToast } from "../components/form"
 import appStates from "../utils/states"
@@ -7,7 +7,7 @@ import { parseSrt } from "../utils/caption"
 import { getQueryParams } from "../utils/browser"
 
 import "./intro.sass"
-import { basename } from 'path'
+import { basenam } from 'url'
 
 type State = {
   subtitleUrl: string
@@ -39,8 +39,8 @@ export default class Intro extends React.Component<{}, State> {
       sub = params["subtitle"] ?? "",
       vid = params["video"] ?? ""
 
-      this.loadVideo(vid, basename(vid))
-      this.loadCaptions(sub, basename(sub))
+      this.loadVideo(vid, vid)
+      this.loadCaptions(sub, sub)
   }
 
   async loadCaptions(url: string, fname: string) {
@@ -87,7 +87,7 @@ export default class Intro extends React.Component<{}, State> {
 
   render() {
     if (this.state.canPass)
-      return <Redirect to="/studio" />
+      return <Navigate to="/studio" />
 
     return (<>
       <h2 className="page-title"> Intro </h2>
