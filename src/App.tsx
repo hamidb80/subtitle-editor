@@ -10,8 +10,7 @@ export default class App extends React.Component {
   render() {
     return (
       <>
-        {/* <Router basename="/subtitle-editor"> */}
-        <Router>
+        <Router basename="/subtitle-editor">
           <Routes>
             <Route path="/" element={<Intro />}></Route>
             <Route path="/studio" element={<Studio />}></Route>
