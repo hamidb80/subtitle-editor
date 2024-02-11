@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react'
+import React from 'react'
 import hotkeys from 'hotkeys-js'
 
 import { TimeControll } from "."
@@ -106,7 +106,7 @@ export default class CaptionEditor extends React.Component<{
     return time >= 0 && time <= this.props.totalTime
   }
 
-  onCaptionContentChanged(e: any) {
+  onCaptionContentChanged(_: any) {
     const newCap = this.state.newCaption
     if (newCap !== null)
       this.setState({
@@ -156,8 +156,8 @@ export default class CaptionEditor extends React.Component<{
     }
   }
 
-  handleKeypress(e: KeyboardEvent){
-    if (e.key == "Escape") // to save the states
+  handleKeypress(key: string){
+    if (key == "Escape") // to save the states
       this.inputRef.current?.blur()
   }
 
@@ -191,7 +191,7 @@ export default class CaptionEditor extends React.Component<{
             className={"form-control caption-editor " + (this.state.is_ltr ? "ltr" : "rtl")}
             value={this.state.newCaption?.content || ""}
             onChange={this.onCaptionContentChanged}
-            onKeyDown={this.handleKeypress}
+            onKeyDown={(e) => this.handleKeypress(e.code)}
             onBlur={this.handleCaptionChange} />
         </div>
 

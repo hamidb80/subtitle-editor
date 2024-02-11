@@ -62,7 +62,7 @@ export default class VideoPlayer extends React.Component<Props> {
     }
   }
 
-  onMouseMove(e: MouseEvent) {
+  onMouseMove(_: MouseEvent) {
     if (this.timer)
       clearTimeout(this.timer)
 

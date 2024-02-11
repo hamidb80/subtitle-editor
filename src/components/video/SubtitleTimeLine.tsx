@@ -255,7 +255,7 @@ export default class SubtitleTimeline extends React.Component<{
 
               <div className="times" >
                 {this.state.timeRulers.map((dataUrl, i) =>
-                  <img src={dataUrl} alt={`time-ruler-{i}`} />
+                  <img src={dataUrl} alt={`time-ruler-${i}`} />
                 )}
               </div>
 
@@ -305,7 +305,7 @@ class CaptionItem extends React.Component<{
     this.onDragTailStop = this.onDragTailStop.bind(this)
   }
 
-  onDragCenterStop(e: DraggableEvent, dd: DraggableData) {
+  onDragCenterStop(_: DraggableEvent, dd: DraggableData) {
     if (this.props.selected_i !== this.props.index) return
 
     let
@@ -320,7 +320,7 @@ class CaptionItem extends React.Component<{
     this.props.onCaptionChanged(this.props.selected_i, u)
   }
 
-  onDragHeadStop(e: DraggableEvent, dd: DraggableData) {
+  onDragHeadStop(_: DraggableEvent, dd: DraggableData) {
     if (this.props.selected_i !== this.props.index) return
 
     let
@@ -334,7 +334,7 @@ class CaptionItem extends React.Component<{
     this.props.onCaptionChanged(this.props.selected_i, u)
   }
 
-  onDragTailStop(e: DraggableEvent, dd: DraggableData) {
+  onDragTailStop(_: DraggableEvent, dd: DraggableData) {
     if (this.props.selected_i !== this.props.index) return
 
     let
@@ -348,7 +348,7 @@ class CaptionItem extends React.Component<{
     this.props.onCaptionChanged(this.props.selected_i, u)
   }
 
-  onClick(e: MouseEvent) {
+  onClick(_: MouseEvent) {
     this.props.clickFunc(this.props.index)
   }
 

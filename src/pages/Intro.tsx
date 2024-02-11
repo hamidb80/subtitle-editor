@@ -7,7 +7,6 @@ import { parseSrt } from "../utils/caption"
 import { getQueryParams } from "../utils/browser"
 
 import "./intro.sass"
-import { basenam } from 'url'
 
 type State = {
   subtitleUrl: string

@@ -137,7 +137,7 @@ export default class Studio extends React.Component<{}, {
       if (i !== -1)
         this.setState({ selected_caption_i: i })
     })
-    hotkeys('escape', kv => {
+    hotkeys('escape', _ => {
         this.setState({ selected_caption_i: null })
     })
 
@@ -146,7 +146,7 @@ export default class Studio extends React.Component<{}, {
       if (kv.target.tagName !== 'INPUT')
         kv.preventDefault()
     })
-    hotkeys('ctrl+space', kv => {
+    hotkeys('ctrl+space', _ => {
       this.VideoPlayerRef.current?.togglePlay()
     })
 
@@ -188,7 +188,7 @@ export default class Studio extends React.Component<{}, {
     this.setState({ currentTime: nt })
   }
 
-  onVideoError(e: SyntheticEvent) {
+  onVideoError(_: SyntheticEvent) {
     pushToast({
       kind: 'danger',
       message: "error happend while loading video",
@@ -332,13 +332,14 @@ export default class Studio extends React.Component<{}, {
     fileDownload(export2srt(this.state.captions), this.state.subFileName)
   }
 
-  handleSeparatorStop(e: DraggableEvent, dd: DraggableData) {
+  // handleSeparatorStop(_: DraggableEvent, _: DraggableData) {
+  handleSeparatorStop() {
     this.setState({
       videoHeight: this.state.videoHeight + this.state.acc,
       acc: 0,
     })
   }
-  handleSeparatorDrag(e: DraggableEvent, dd: DraggableData) {
+  handleSeparatorDrag(_: DraggableEvent, dd: DraggableData) {
     this.setState({ acc: this.state.acc + dd.deltaY })
   }
 
