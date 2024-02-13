@@ -11,8 +11,12 @@ import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn, pushToast } from "../components/form"
 
-import "./studio.sass"
+import WaveSurfer from 'wavesurfer.js'
+
+
 import fileDownload from 'js-file-download'
+
+import "./studio.sass"
 
 
 function copyReplace<T>(arr: T[], i: number, repl: T): T[] {
@@ -37,6 +41,7 @@ export default class Studio extends React.Component<{}, {
 }> {
 
   VideoPlayerRef: React.RefObject<VideoPlayer>
+  ws: WaveSurfer
 
   constructor(props: any) {
     super(props)
@@ -58,11 +63,13 @@ export default class Studio extends React.Component<{}, {
       history: [],
     }
 
+    this.subtitleTimelineRef = React.createRef()
     this.VideoPlayerRef = React.createRef()
 
     // --- bind methods ---
     this.onTimeUpdate = this.onTimeUpdate.bind(this)
     this.onVideoError = this.onVideoError.bind(this)
+    this.onVideoLoad = this.onVideoLoad.bind(this)
     this.handleSeparatorDrag = this.handleSeparatorDrag.bind(this)
     this.handleSeparatorStop = this.handleSeparatorStop.bind(this)
 
@@ -158,13 +165,31 @@ export default class Studio extends React.Component<{}, {
       kv.preventDefault()
       this.saveFile()
     })
-
   }
   componentWillUnmount() {
     hotkeys.unbind()
   }
 
   // ----------- video player events -------------------
+
+  onVideoLoad(){
+    let c = document.getElementById("sound-wave")
+    let v = document.querySelector('video')
+    
+    this.ws = WaveSurfer.create({
+      container: c,
+      waveColor: 'rgb(200, 0, 200)',
+      progressColor: 'rgb(100, 0, 100)',
+      media: v,
+      interact: false,
+      height: 30,
+    }) 
+
+    this.ws.on("ready", () => {
+      let scale = this.subtitleTimelineRef.current.state.scale
+      this.ws.zoom(scale)
+    });
+  }
 
   onTimeUpdate(nt: number) { // nt: new time
     const sci = this.state.selected_caption_i
@@ -360,6 +385,7 @@ export default class Studio extends React.Component<{}, {
             onError={this.onVideoError}
             height={this.state.videoHeight}
             onDurationChanges={du => this.setState({ totalTime: du })}
+            onLoad={this.onVideoLoad}
           />
         </div>
 
@@ -433,6 +459,7 @@ export default class Studio extends React.Component<{}, {
         </div>
 
         <SubtitleTimeline
+          ref ={this.subtitleTimelineRef}
           className="my-1"
           duration={this.state.totalTime}
           currentTime={this.state.currentTime}

@@ -26,6 +26,8 @@ export default class SubtitleTimeline extends React.Component<{
   selectedCaption_i: number | null
   onCaptionSelected: (captionIndex: number | null) => void
   onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
+
+  onScaleChanged: (scale: number) => void
 },
   {
     error: boolean
@@ -76,8 +78,10 @@ export default class SubtitleTimeline extends React.Component<{
   zoom(value: number) {
     const new_val = this.state.scale + value
 
-    if (this.isZoomInValid(new_val) && this.isZoomOutValid(new_val))
+    if (this.isZoomInValid(new_val) && this.isZoomOutValid(new_val)){
       this.setState({ scale: new_val })
+      // this.props.onScaleChanged(new_val)
+    }
   }
   isZoomInValid(val: number): boolean {
     return (val <= MAX_SCALE)
@@ -252,10 +256,11 @@ export default class SubtitleTimeline extends React.Component<{
               width: `${duration * scale}px`,
               transition: "0.1s linear"
             }}>
+              <div id="sound-wave"></div>
 
               <div className="times" >
                 {this.state.timeRulers.map((dataUrl, i) =>
-                  <img src={dataUrl} alt={`time-ruler-${i}`} />
+                  <img src={dataUrl} key={`time-ruler-${i}`} />
                 )}
               </div>
 

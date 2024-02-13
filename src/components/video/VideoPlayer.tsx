@@ -1,9 +1,8 @@
-import React, { SyntheticEvent, MouseEvent } from 'react'
+import React, { SyntheticEvent, MouseEvent } from "react"
 
 import "./video-player.sass"
 
 const videoControllHiddingDelay = 2
-
 
 type Props = {
   videoUrl: string
@@ -11,9 +10,10 @@ type Props = {
   onError?: (e: SyntheticEvent) => void
   onDurationChanges: (duration: number) => void
   height?: number
+  onLoad?: () => void
 }
 export default class VideoPlayer extends React.Component<Props> {
-  videoElementRef: React.RefObject<HTMLVideoElement>
+  ref: React.RefObject<HTMLVideoElement>
   timer: number = 0 // for settimeout
 
   state: {
@@ -26,10 +26,10 @@ export default class VideoPlayer extends React.Component<Props> {
 
     this.state = {
       lastStart: 0,
-      showVideoControll: false
+      showVideoControll: false,
     }
 
-    this.videoElementRef = React.createRef()
+    this.ref = React.createRef()
 
     // --- register methods ---
     // events
@@ -50,7 +50,7 @@ export default class VideoPlayer extends React.Component<Props> {
   onDurationChanges() {
     // emit signal
     if (this.props.onDurationChanges) {
-      const du = this.videoElementRef.current?.duration || 0
+      const du = this.ref.current?.duration || 0
       this.props.onDurationChanges(du)
     }
   }
@@ -63,16 +63,17 @@ export default class VideoPlayer extends React.Component<Props> {
   }
 
   onMouseMove(_: MouseEvent) {
-    if (this.timer)
-      clearTimeout(this.timer)
+    if (this.timer) clearTimeout(this.timer)
 
     this.setState({ showVideoControll: true })
-    this.timer = +setTimeout(this.disableVideoControllers, videoControllHiddingDelay * 1000)
+    this.timer = +setTimeout(
+      this.disableVideoControllers,
+      videoControllHiddingDelay * 1000
+    )
   }
 
   onError(e: SyntheticEvent) {
-    if (this.props.onError)
-      this.props.onError(e)
+    if (this.props.onError) this.props.onError(e)
   }
 
   // // ----------------------- functions ------------------------
@@ -83,12 +84,12 @@ export default class VideoPlayer extends React.Component<Props> {
   }
 
   setTime(timePerSeconds: number) {
-    const ve = this.videoElementRef.current
+    const ve = this.ref.current
     if (ve) ve.currentTime = timePerSeconds
   }
 
   shootTime(seconds: number) {
-    const ve = this.videoElementRef.current
+    const ve = this.ref.current
 
     if (ve) {
       const currentTime = ve.currentTime
@@ -97,11 +98,9 @@ export default class VideoPlayer extends React.Component<Props> {
   }
 
   setPlay(play: boolean) {
-    if (this.videoElementRef.current) {
-      if (play)
-        this.videoElementRef.current?.play()
-      else
-        this.videoElementRef.current?.pause()
+    if (this.ref.current) {
+      if (play) this.ref.current?.play()
+      else this.ref.current?.pause()
     }
   }
 
@@ -110,7 +109,7 @@ export default class VideoPlayer extends React.Component<Props> {
   }
 
   isPlaying(): boolean {
-    return Boolean(this.videoElementRef.current && !this.videoElementRef.current.paused)
+    return Boolean(this.ref.current && !this.ref.current.paused)
   }
 
   // -------------------------- component API ---------------------------
@@ -118,37 +117,46 @@ export default class VideoPlayer extends React.Component<Props> {
     const isPlaying = this.isPlaying()
 
     return (
-      <div className={"video-player " + (this.state.showVideoControll ? 'show ' : '')}
-        onMouseMove={this.onMouseMove} onMouseOut={this.disableVideoControllers}>
-
-        <div className="video-screen" onContextMenu={e => e.preventDefault()}>
-
+      <div
+        className={
+          "video-player " + (this.state.showVideoControll ? "show " : "")
+        }
+        onMouseMove={this.onMouseMove}
+        onMouseOut={this.disableVideoControllers}
+      >
+        <div className="video-screen" onContextMenu={(e) => e.preventDefault()}>
           <video
             height={this.props.height}
             onTimeUpdate={this.onTimeUpdate}
-            ref={this.videoElementRef}
+            ref={this.ref}
             src={this.props.videoUrl}
             autoPlay={false}
             loop={false}
             onDurationChange={this.onDurationChanges}
-            onError={e => this.onError(e)}
+            onError={(e) => this.onError(e)}
+            onLoadedData={(_) => this.props.onLoad()}
           ></video>
 
           <div className="video-state-controller">
             <div className="part"></div>
 
             <div className="part action-btn-group">
-              <div className="action-btn play-pause" onClick={() => this.setPlay(!isPlaying)}>
-                <span className={"icon fas fa-3x " + (isPlaying ? "fa-pause" : "fa-play")}>
-                </span>
+              <div
+                className="action-btn play-pause"
+                onClick={() => this.setPlay(!isPlaying)}
+              >
+                <span
+                  className={
+                    "icon fas fa-3x " + (isPlaying ? "fa-pause" : "fa-play")
+                  }
+                ></span>
               </div>
             </div>
 
             <div className="part"></div>
           </div>
-
         </div>
-      </div >
+      </div>
     )
   }
 }
