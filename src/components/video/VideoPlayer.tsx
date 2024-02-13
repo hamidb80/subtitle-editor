@@ -6,11 +6,11 @@ const videoControllHiddingDelay = 2
 
 type Props = {
   videoUrl: string
-  onTimeUpdate?: (timePerSecond: number) => void
-  onError?: (e: SyntheticEvent) => void
+  onTimeUpdate: (timePerSecond: number) => void
+  onError: (e: SyntheticEvent) => void
   onDurationChanges: (duration: number) => void
-  height?: number
-  onLoad?: () => void
+  height: number
+  onLoad: () => void
 }
 export default class VideoPlayer extends React.Component<Props> {
   ref: React.RefObject<HTMLVideoElement>

@@ -6,7 +6,7 @@ import { v4 as uuid } from "uuid"
 import appStates from "../utils/states"
 import { simpleSort } from "../utils/funcs"
 import { Caption, export2srt, captionsCompare } from "../utils/caption"
-import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY } from "../utils/consts"
+import { SHOOT_TIME_MINOR, SHOOT_TIME_MAJOR, MAX_HISTORY, DEFAULT_SCALE } from "../utils/consts"
 
 import { VideoPlayer, Timeline, SubtitleTimeline, CaptionEditor, CaptionView } from "../components/video"
 import { CircleBtn, pushToast } from "../components/form"
@@ -38,16 +38,20 @@ export default class Studio extends React.Component<{}, {
   
   history: Caption[][]
   historyCursor: number
+  
+  scale: number
 }> {
 
   VideoPlayerRef: React.RefObject<VideoPlayer>
+  subtitleTimelineRef: React.RefObject<SubtitleTimeline>
+  // @ts-ignore
   ws: WaveSurfer
 
   constructor(props: any) {
     super(props)
 
     this.state = {
-      videoUrl: appStates.videoUrl.getData(),
+      videoUrl: appStates.videoUrl.getData() || "https://as8.asset.aparat.com/aparat-video/c0abed25946d273ab38fbd2274df6c6d6957437-360p.mp4?wmsAuthSign=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6IjY3NTZjNjJiZjYwMDIyNjUzMjc5OTM0ZWYxMmY5OGM5IiwiZXhwIjoxNzA3ODYxNTg3LCJpc3MiOiJTYWJhIElkZWEgR1NJRyJ9.QatHrg3GFqNI4KOeucQrY61Z-lEdrsKaLxlSTDVT2cE",
       videoHeight: 400,
       acc: 0,
 
@@ -61,6 +65,8 @@ export default class Studio extends React.Component<{}, {
 
       historyCursor: -1,
       history: [],
+      
+      scale: DEFAULT_SCALE,
     }
 
     this.subtitleTimelineRef = React.createRef()
@@ -72,6 +78,7 @@ export default class Studio extends React.Component<{}, {
     this.onVideoLoad = this.onVideoLoad.bind(this)
     this.handleSeparatorDrag = this.handleSeparatorDrag.bind(this)
     this.handleSeparatorStop = this.handleSeparatorStop.bind(this)
+    this.onScaleChanged = this.onScaleChanged.bind(this)
 
     this.addCaptionUIHandler = this.addCaptionUIHandler.bind(this)
     this.changeCaptionUIHandler = this.changeCaptionUIHandler.bind(this)
@@ -173,8 +180,8 @@ export default class Studio extends React.Component<{}, {
   // ----------- video player events -------------------
 
   onVideoLoad(){
-    let c = document.getElementById("sound-wave")
-    let v = document.querySelector('video')
+    let c = document.getElementById("sound-wave")!
+    let v = document.querySelector('video')!
     
     this.ws = WaveSurfer.create({
       container: c,
@@ -186,8 +193,7 @@ export default class Studio extends React.Component<{}, {
     }) 
 
     this.ws.on("ready", () => {
-      let scale = this.subtitleTimelineRef.current.state.scale
-      this.ws.zoom(scale)
+      this.ws.zoom(this.state.scale)
     });
   }
 
@@ -219,6 +225,11 @@ export default class Studio extends React.Component<{}, {
       message: "error happend while loading video",
       duration: 5000
     })
+  }
+
+  onScaleChanged(scale: number) {
+    this.setState({scale})
+    this.ws.zoom(scale)
   }
 
   // ----------------- functionalities --------------------
@@ -464,11 +475,12 @@ export default class Studio extends React.Component<{}, {
           duration={this.state.totalTime}
           currentTime={this.state.currentTime}
           onSelectNewTime={nt => this.VideoPlayerRef.current?.setTime(nt)}
-
+          scale={this.state.scale}
           captions={caps}
           onCaptionSelected={this.captionSelectionToggle}
           selectedCaption_i={selected_ci}
           onCaptionChanged={this.changeCaptionUIHandler}
+          onScaleChanged={this.onScaleChanged}
         />
 
         <CaptionEditor

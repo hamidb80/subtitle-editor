@@ -27,12 +27,12 @@ export default class SubtitleTimeline extends React.Component<{
   onCaptionSelected: (captionIndex: number | null) => void
   onCaptionChanged: (captionIndex: number, captionItem: Caption) => void
 
+  scale: number
   onScaleChanged: (scale: number) => void
 },
   {
     error: boolean
     lastScale: number
-    scale: number
     timeRulers: string[]
     cursorXPos: number
   }
@@ -46,7 +46,6 @@ export default class SubtitleTimeline extends React.Component<{
     this.state = {
       error: false,
       lastScale: 0,
-      scale: 0,
       cursorXPos: out,
       timeRulers: [], // array of dataUrl
     }
@@ -76,12 +75,10 @@ export default class SubtitleTimeline extends React.Component<{
   }
 
   zoom(value: number) {
-    const new_val = this.state.scale + value
+    const new_val = this.props.scale + value
 
-    if (this.isZoomInValid(new_val) && this.isZoomOutValid(new_val)){
-      this.setState({ scale: new_val })
-      // this.props.onScaleChanged(new_val)
-    }
+    if (this.isZoomInValid(new_val) && this.isZoomOutValid(new_val))
+      this.props.onScaleChanged(new_val)
   }
   isZoomInValid(val: number): boolean {
     return (val <= MAX_SCALE)
@@ -104,7 +101,7 @@ export default class SubtitleTimeline extends React.Component<{
   }
 
   setTimeFromPixels(timePerPixels: number) {
-    this.props.onSelectNewTime(this.props.currentTime - TIMELINE_CURSOR_OFFSET + timePerPixels / this.state.scale)
+    this.props.onSelectNewTime(this.props.currentTime - TIMELINE_CURSOR_OFFSET + timePerPixels / this.props.scale)
   }
 
   initTimeRuler() {
@@ -126,7 +123,7 @@ export default class SubtitleTimeline extends React.Component<{
   updateRuler() {
     let
       cachedTimeRulers: string[] = [],
-      s = this.state.scale,
+      s = this.props.scale,
       maximumSecondsPerChunk = Math.floor(MAX_CANVAS_SIZE / s),
       d = this.props.duration,
       progress = 0
@@ -137,7 +134,7 @@ export default class SubtitleTimeline extends React.Component<{
       for (let second = progress; second <= limit; second++) {
         const
           time = second2timestamp(second, "minute"),
-          common = { text: time, x: this.state.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" }
+          common = { text: time, x: this.props.scale * second - 14, y: 4, fontSize: 13, fontFamily: "tahoma" }
 
         if (s < 20) {
           if (second % 5 === 0)
@@ -182,18 +179,16 @@ export default class SubtitleTimeline extends React.Component<{
   componentDidUpdate() {
     if (this.props.duration === 0) return
 
-    if (this.state.scale === 0) {
+    if (this.props.scale === 0) {
       let currentScale = DEFAULT_SCALE
 
       if (currentScale <= 0)
-        this.setState({ error: true, scale: -1 })
-      else
-        this.setState({ scale: currentScale })
+        this.setState({ error: true })
     }
 
     // to prevent useless rerender
-    else if (this.state.lastScale !== this.state.scale) {
-      this.setState({ lastScale: this.state.scale }, this.updateRuler)
+    else if (this.state.lastScale !== this.props.scale) {
+      this.setState({ lastScale: this.props.scale }, this.updateRuler)
     }
 
     if (this.group === null)
@@ -207,7 +202,7 @@ export default class SubtitleTimeline extends React.Component<{
     const
       duration = this.props.duration,
       progress = -(this.props.currentTime - TIMELINE_CURSOR_OFFSET) / duration * 100,
-      scale = this.state.scale
+      scale = this.props.scale
 
     return (
       <div className={"advanced-timeline " + this.props.className}>
@@ -216,7 +211,7 @@ export default class SubtitleTimeline extends React.Component<{
           <CircleBtn
             className="mb-1"
             onClick={this.zoomIn}
-            disabled={!this.isZoomInValid(this.state.scale + SHOOT_ZOOM)}
+            disabled={!this.isZoomInValid(this.props.scale + SHOOT_ZOOM)}
             iconClassName="fas fa-search-plus"
           />
 
@@ -227,7 +222,7 @@ export default class SubtitleTimeline extends React.Component<{
           <CircleBtn
             className="mb-1"
             onClick={this.zoomOut}
-            disabled={!this.isZoomOutValid(this.state.scale - SHOOT_ZOOM)}
+            disabled={!this.isZoomOutValid(this.props.scale - SHOOT_ZOOM)}
             iconClassName="fas fa-search-minus"
           />
         </div>
