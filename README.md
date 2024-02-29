@@ -7,6 +7,8 @@
 you can see demo [here](https://hamidb80.github.io/subtitle-editor/)
 
 ![screenshot](./src/assets/screenshot.png)
+![image](https://github.com/hamidb80/subtitle-editor/assets/33871336/e959bf4a-91ae-438f-8d0a-11374f236cc2)
+
 
 ## features
 * shortcuts/mouse
